@@ -33,6 +33,7 @@
   --shadow-float: 0 16px 34px rgba(27, 29, 27, 0.12);
   --shadow-action: 3px 3px 0 var(--color-ink);
   --shadow-action-hover: 1px 1px 0 var(--color-ink);
+  --shadow-action-lift: 5px 5px 0 var(--color-ink);
   --shadow-action-accent: 3px 3px 0 var(--color-accent);
   --shadow-action-accent-hover: 1px 1px 0 var(--color-accent);
   --shadow-outline: 2px 2px 0 var(--color-line);

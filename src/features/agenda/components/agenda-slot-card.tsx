@@ -30,7 +30,7 @@ export function AgendaSlotCard({ slot }: AgendaSlotCardProps) {
         data-slot="agenda-slot-card"
         data-state={slot.status}
         className={cn(
-          'relative flex h-full min-h-40 flex-col overflow-hidden rounded-card border-2 border-line bg-surface p-4 shadow-action transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:border-line-strong hover:shadow-action-hover',
+          'relative flex h-full min-h-40 flex-col overflow-hidden rounded-card border-2 border-line bg-surface p-4 shadow-action transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-line-strong hover:shadow-action-lift',
           isReserved && 'border-ink',
           isBlocked && 'bg-surface-subtle',
         )}
