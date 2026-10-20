@@ -27,20 +27,26 @@ describe('useAgendaStore', () => {
     const store = useAgendaStore.getState()
     const initialCount = store.scheduleSegments.length
 
-    store.addSegment('saturday')
+    store.addSegment('monday')
     const added = useAgendaStore.getState().scheduleSegments
-      .filter((segment) => segment.weekday === 'saturday')
+      .filter((segment) => segment.weekday === 'monday')
       .at(-1)
 
     expect(added).toBeDefined()
+    expect(added).toMatchObject({
+      serviceMode: 'in-person',
+      startTime: '12:15',
+    })
     expect(useAgendaStore.getState().scheduleSegments).toHaveLength(initialCount + 1)
 
     useAgendaStore.getState().updateSegment(added!.id, {
       blockCount: 4,
+      serviceMode: 'remote',
       startTime: '12:00',
     })
     expect(useAgendaStore.getState().scheduleSegments.find((segment) => segment.id === added!.id)).toMatchObject({
       blockCount: 4,
+      serviceMode: 'remote',
       startTime: '12:00',
     })
 
@@ -59,6 +65,7 @@ describe('useAgendaStore', () => {
       expect.objectContaining({
         blockCount: 2,
         enabled: true,
+        serviceMode: 'in-person',
         startTime: '09:00',
         weekday: 'sunday',
       }),

@@ -14,6 +14,7 @@ describe('generateAgendaSlots', () => {
           enabled: true,
           id: 'segment-tuesday-test',
           startTime: '10:00',
+          serviceMode: 'in-person',
           weekday: 'tuesday',
         },
       ],
@@ -55,6 +56,26 @@ describe('generateAgendaSlots', () => {
     })
   })
 
+  it('omite un bloque retirado sin mover los horarios siguientes', () => {
+    const slots = generateAgendaSlots({
+      appointments: [],
+      date: '2026-08-04',
+      scheduleSegments: [
+        {
+          blockCount: 3,
+          enabled: true,
+          excludedBlockIndexes: [1],
+          id: 'segment-tuesday-test',
+          startTime: '10:00',
+          serviceMode: 'in-person',
+          weekday: 'tuesday',
+        },
+      ],
+    })
+
+    expect(slots.map((slot) => slot.startTime)).toEqual(['10:00', '11:30'])
+  })
+
   it('ignora jornadas inactivas, inválidas y duplicadas', () => {
     const slots = generateAgendaSlots({
       appointments: [],
@@ -65,6 +86,7 @@ describe('generateAgendaSlots', () => {
           enabled: false,
           id: 'disabled',
           startTime: '08:00',
+          serviceMode: 'in-person',
           weekday: 'tuesday',
         },
         {
@@ -72,6 +94,7 @@ describe('generateAgendaSlots', () => {
           enabled: true,
           id: 'valid',
           startTime: '10:00',
+          serviceMode: 'in-person',
           weekday: 'tuesday',
         },
         {
@@ -79,6 +102,7 @@ describe('generateAgendaSlots', () => {
           enabled: true,
           id: 'duplicate',
           startTime: '10:00',
+          serviceMode: 'in-person',
           weekday: 'tuesday',
         },
         {
@@ -86,6 +110,7 @@ describe('generateAgendaSlots', () => {
           enabled: true,
           id: 'cross-midnight',
           startTime: '23:30',
+          serviceMode: 'in-person',
           weekday: 'tuesday',
         },
       ],

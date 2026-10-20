@@ -9,6 +9,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: true,
     startTime: '10:00',
     blockCount: 3,
+    serviceMode: 'in-person',
   },
   {
     id: 'segment-tuesday-1',
@@ -16,6 +17,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: true,
     startTime: '09:00',
     blockCount: 5,
+    serviceMode: 'remote',
   },
   {
     id: 'segment-wednesday-1',
@@ -23,6 +25,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: true,
     startTime: '15:00',
     blockCount: 3,
+    serviceMode: 'in-person',
   },
   {
     id: 'segment-thursday-1',
@@ -30,6 +33,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: true,
     startTime: '10:00',
     blockCount: 4,
+    serviceMode: 'home-visit',
   },
   {
     id: 'segment-friday-1',
@@ -37,6 +41,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: true,
     startTime: '09:30',
     blockCount: 4,
+    serviceMode: 'remote',
   },
   {
     id: 'segment-saturday-1',
@@ -44,6 +49,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: false,
     startTime: '10:00',
     blockCount: 3,
+    serviceMode: 'in-person',
   },
   {
     id: 'segment-sunday-1',
@@ -51,6 +57,7 @@ export const demoScheduleSegments: ScheduleSegment[] = [
     enabled: false,
     startTime: '10:00',
     blockCount: 2,
+    serviceMode: 'in-person',
   },
 ]
 

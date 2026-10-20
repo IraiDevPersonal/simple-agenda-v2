@@ -13,6 +13,7 @@ const segment = (overrides: Partial<ScheduleSegment> = {}): ScheduleSegment => (
   enabled: true,
   id: 'segment-test',
   startTime: '15:00',
+  serviceMode: 'in-person',
   weekday: 'wednesday',
   ...overrides,
 })
@@ -23,6 +24,13 @@ describe('schedule validation', () => {
     expect(getSegmentPreview(segment())).toEqual(['15:00', '15:45', '16:30'])
   })
 
+  it('mantiene los bloques restantes cuando se quita uno intermedio', () => {
+    expect(getSegmentPreview(segment({ excludedBlockIndexes: [1] }))).toEqual([
+      '15:00',
+      '16:30',
+    ])
+  })
+
   it('rechaza cantidades inválidas y tramos que cruzan medianoche', () => {
     expect(validateScheduleSegment(segment({ blockCount: 0 }))).toContain(
       'Añade al menos un bloque de 45 minutos.',
@@ -31,6 +39,12 @@ describe('schedule validation', () => {
       'El tramo no puede terminar después de medianoche.',
     )
     expect(getSegmentEndTime(segment({ blockCount: 2, startTime: '23:30' }))).toBeNull()
+  })
+
+  it('valida un tramo sin bloques disponibles', () => {
+    expect(validateScheduleSegment(segment({ blockCount: 1, excludedBlockIndexes: [0] }))).toContain(
+      'Añade al menos un bloque de 45 minutos.',
+    )
   })
 
   it('detecta solapamientos del mismo día', () => {

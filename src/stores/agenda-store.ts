@@ -1,10 +1,19 @@
 import { create } from 'zustand'
 
 import { demoAppointments, demoScheduleSegments } from '@/data/demo-data'
+import {
+  DEFAULT_SCHEDULE_START_TIME,
+  DEFAULT_SERVICE_MODE,
+  getSuggestedSegmentStartTime,
+  getSuggestedServiceMode,
+} from '@/features/schedule/lib/schedule-segment-utils'
 import type { ScheduleSegment, Weekday } from '@/types/agenda'
 
 type ScheduleSegmentUpdate = Partial<
-  Pick<ScheduleSegment, 'enabled' | 'startTime' | 'blockCount'>
+  Pick<
+    ScheduleSegment,
+    'enabled' | 'startTime' | 'blockCount' | 'excludedBlockIndexes' | 'serviceMode'
+  >
 >
 
 type AgendaStore = {
@@ -38,8 +47,9 @@ export const useAgendaStore = create<AgendaStore>((set) => ({
               id: createSegmentId(weekday),
               weekday,
               enabled: true,
-              startTime: '09:00',
+              startTime: DEFAULT_SCHEDULE_START_TIME,
               blockCount: 2,
+              serviceMode: DEFAULT_SERVICE_MODE,
             },
           ],
         }
@@ -52,18 +62,25 @@ export const useAgendaStore = create<AgendaStore>((set) => ({
       }
     }),
   addSegment: (weekday) =>
-    set((state) => ({
-      scheduleSegments: [
-        ...state.scheduleSegments,
-        {
-          id: createSegmentId(weekday),
-          weekday,
-          enabled: true,
-          startTime: '09:00',
-          blockCount: 2,
-        },
-      ],
-    })),
+    set((state) => {
+      const weekdaySegments = state.scheduleSegments.filter(
+        (segment) => segment.weekday === weekday,
+      )
+
+      return {
+        scheduleSegments: [
+          ...state.scheduleSegments,
+          {
+            id: createSegmentId(weekday),
+            weekday,
+            enabled: true,
+            startTime: getSuggestedSegmentStartTime(weekdaySegments),
+            blockCount: 2,
+            serviceMode: getSuggestedServiceMode(weekdaySegments),
+          },
+        ],
+      }
+    }),
   updateSegment: (segmentId, update) =>
     set((state) => ({
       scheduleSegments: state.scheduleSegments.map((segment) =>

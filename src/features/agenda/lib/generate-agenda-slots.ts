@@ -1,7 +1,6 @@
 import { weekdayFromDateKey } from '@/lib/date-utils'
-import { addMinutesToTime, timeToMinutes } from '@/lib/time-utils'
+import { getScheduleBlocks } from '@/lib/schedule-block-utils'
 import {
-  SLOT_DURATION_MINUTES,
   type AgendaSlot,
   type Appointment,
   type DateKey,
@@ -30,37 +29,18 @@ export function generateAgendaSlots({
   scheduleSegments
     .filter((segment) => segment.enabled && segment.weekday === weekday)
     .forEach((segment) => {
-      const startMinutes = timeToMinutes(segment.startTime)
-
-      if (
-        startMinutes === null ||
-        !Number.isInteger(segment.blockCount) ||
-        segment.blockCount < 1 ||
-        startMinutes + segment.blockCount * SLOT_DURATION_MINUTES > 24 * 60
-      ) {
-        return
-      }
-
-      for (let index = 0; index < segment.blockCount; index += 1) {
-        const blockStart = addMinutesToTime(
-          segment.startTime,
-          index * SLOT_DURATION_MINUTES,
-        )
-        const blockEnd = blockStart
-          ? addMinutesToTime(blockStart, SLOT_DURATION_MINUTES)
-          : null
-
-        if (!blockStart || !blockEnd || slotsByStart.has(blockStart)) {
+      for (const block of getScheduleBlocks(segment)) {
+        if (slotsByStart.has(block.startTime)) {
           continue
         }
 
-        const appointment = appointmentByStart.get(blockStart)
+        const appointment = appointmentByStart.get(block.startTime)
 
-        slotsByStart.set(blockStart, {
-          id: `${date}-${blockStart}`,
+        slotsByStart.set(block.startTime, {
+          id: `${date}-${block.startTime}`,
           date,
-          startTime: blockStart,
-          endTime: blockEnd,
+          startTime: block.startTime,
+          endTime: block.endTime,
           status: appointment?.status ?? 'available',
           appointmentId: appointment?.id,
           appointment,

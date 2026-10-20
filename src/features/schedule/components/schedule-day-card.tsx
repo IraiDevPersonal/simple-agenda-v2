@@ -10,7 +10,12 @@ type ScheduleDayCardProps = {
   segments: ScheduleSegment[]
   onToggle: (enabled: boolean) => void
   onAdd: () => void
-  onUpdate: (segmentId: string, update: Partial<Pick<ScheduleSegment, 'startTime' | 'blockCount'>>) => void
+  onUpdate: (
+    segmentId: string,
+    update: Partial<
+      Pick<ScheduleSegment, 'startTime' | 'blockCount' | 'excludedBlockIndexes' | 'serviceMode'>
+    >,
+  ) => void
   onRemove: (segmentId: string) => void
 }
 

@@ -1,5 +1,6 @@
 import { SLOT_DURATION_MINUTES, type ScheduleSegment } from '@/types/agenda'
 import { MINUTES_PER_DAY, timeToMinutes } from '@/lib/time-utils'
+import { getScheduleBlocks } from '@/lib/schedule-block-utils'
 
 export type ScheduleValidationErrors = Record<string, string[]>
 
@@ -27,24 +28,7 @@ export function getSegmentEndTime(segment: ScheduleSegment): string | null {
 }
 
 export function getSegmentPreview(segment: ScheduleSegment): string[] {
-  const startMinutes = timeToMinutes(segment.startTime)
-
-  if (
-    startMinutes === null ||
-    !Number.isInteger(segment.blockCount) ||
-    segment.blockCount < 1 ||
-    segmentEndMinutes(segment)! > MINUTES_PER_DAY
-  ) {
-    return []
-  }
-
-  return Array.from({ length: Math.min(segment.blockCount, 8) }, (_, index) => {
-    const blockStart = startMinutes + index * SLOT_DURATION_MINUTES
-    const hours = Math.floor(blockStart / 60)
-    const minutes = blockStart % 60
-
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
-  })
+  return getScheduleBlocks(segment).map((block) => block.startTime)
 }
 
 export function validateScheduleSegment(
@@ -57,6 +41,7 @@ export function validateScheduleSegment(
 
   const errors: string[] = []
   const startMinutes = timeToMinutes(segment.startTime)
+  const endMinutes = segmentEndMinutes(segment)
 
   if (startMinutes === null) {
     errors.push('Elige una hora de inicio válida.')
@@ -66,7 +51,15 @@ export function validateScheduleSegment(
     errors.push('Añade al menos un bloque de 45 minutos.')
   }
 
-  const endMinutes = segmentEndMinutes(segment)
+  if (
+    startMinutes !== null &&
+    segment.blockCount > 0 &&
+    endMinutes !== null &&
+    endMinutes <= MINUTES_PER_DAY &&
+    getScheduleBlocks(segment).length === 0
+  ) {
+    errors.push('Añade al menos un bloque de 45 minutos.')
+  }
 
   if (endMinutes !== null && endMinutes > MINUTES_PER_DAY) {
     errors.push('El tramo no puede terminar después de medianoche.')

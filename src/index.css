@@ -107,6 +107,86 @@ input:disabled {
 }
 
 @layer components {
+  .app-select {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  .app-select-icon {
+    transform: translateY(-50%) rotate(0deg);
+    transform-origin: center;
+  }
+
+  .app-time-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+  }
+
+  .app-select option {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  .app-select option:checked {
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  @supports (appearance: base-select) {
+    .app-select {
+      appearance: base-select;
+    }
+
+    .app-select::picker-icon {
+      display: none;
+    }
+
+    .app-select::picker(select) {
+      appearance: base-select;
+      width: min(15rem, calc(100vw - 2rem));
+      margin-block-start: 0.35rem;
+      padding: 0.25rem;
+      border: 2px solid var(--color-ink);
+      border-radius: 0.75rem;
+      background: var(--color-surface);
+      box-shadow: var(--shadow-action);
+      color: var(--color-ink);
+    }
+
+    .app-select option {
+      padding: 0.5rem 0.65rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      transition: background-color 160ms ease-out, color 160ms ease-out;
+    }
+
+    .app-select option:hover,
+    .app-select option:focus {
+      background-color: var(--color-accent-soft);
+      color: var(--color-ink);
+    }
+
+    .app-select option:checked {
+      background-color: var(--color-accent);
+      color: var(--color-accent-ink);
+    }
+
+    .app-select option::checkmark {
+      color: var(--color-ink);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .app-select-shell:has(.app-select:open) .app-select-icon {
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+
   .scribble-underline {
     position: relative;
     isolation: isolate;

@@ -2,7 +2,7 @@
 
 ## Objetivo actual
 
-Construir primero un frontend React accesible y mobile-first para una agenda de profesionales. No integrar Supabase, React Query, auth ni persistencia hasta aprobar la fase visual.
+Construir primero un frontend React accesible y mobile-first para una agenda de profesionales. No integrar Supabase, React Query, auth ni persistencia de datos de dominio hasta aprobar la fase visual. Se permite persistir una preferencia visual local cuando la interfaz lo necesite explícitamente.
 
 ## Reglas rápidas
 

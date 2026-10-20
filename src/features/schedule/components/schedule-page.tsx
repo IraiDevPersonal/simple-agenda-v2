@@ -6,6 +6,7 @@ import { Icon } from '@/components/ui/icon'
 import { StatusPill } from '@/components/ui/status-pill'
 import { ScheduleDayCard } from '@/features/schedule/components/schedule-day-card'
 import { validateScheduleSegments } from '@/features/schedule/lib/schedule-validation'
+import { getScheduleBlockCount } from '@/lib/schedule-block-utils'
 import { useAgendaStore } from '@/stores/agenda-store'
 import type { Weekday } from '@/types/agenda'
 
@@ -34,7 +35,7 @@ export function SchedulePage() {
   )
   const activeSegments = scheduleSegments.filter((segment) => segment.enabled)
   const totalBlocks = activeSegments.reduce(
-    (total, segment) => total + Math.max(0, segment.blockCount),
+    (total, segment) => total + getScheduleBlockCount(segment),
     0,
   )
   const validationErrors = validateScheduleSegments(scheduleSegments)
@@ -61,6 +62,7 @@ export function SchedulePage() {
       <BannerWrapper
         ariaLabel="Introducción de la configuración de agenda"
         dismissLabel="Ocultar introducción de horarios"
+        storageKey="schedule-intro"
         tone="ink"
       >
         <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -73,7 +75,7 @@ export function SchedulePage() {
               Diseña una semana que <span className="text-accent">respire</span>.
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-surface/70 sm:text-lg">
-              Define el inicio y la cantidad de bloques. El fin se calcula solo, sin tiempo perdido ni espacios imposibles.
+              Define el inicio, la modalidad y la cantidad de bloques. El fin se calcula solo, sin tiempo perdido ni espacios imposibles.
             </p>
           </div>
           <AppButton
@@ -89,18 +91,21 @@ export function SchedulePage() {
         </div>
       </BannerWrapper>
 
-      <section className="grid gap-3 sm:grid-cols-3" aria-label="Resumen de horarios">
-        <div className="rounded-control border-2 border-line bg-surface p-4 shadow-card">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">Días activos</p>
-          <p className="mt-2 font-display text-3xl font-bold tracking-[-0.06em] text-ink">{activeWeekdays.size}</p>
+      <section
+        aria-label="Resumen de horarios"
+        className="flex flex-wrap gap-2 sm:gap-3"
+      >
+        <div className="flex-[1_1_calc(50%-0.25rem)] rounded-control border-2 border-line bg-surface p-3 shadow-card sm:flex-1 sm:p-4">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-ink-muted">Días activos</p>
+          <p className="mt-1 font-display text-2xl font-bold tracking-[-0.06em] text-ink sm:mt-2 sm:text-3xl">{activeWeekdays.size}</p>
         </div>
-        <div className="rounded-control border-2 border-line bg-surface p-4 shadow-card">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">Tramos activos</p>
-          <p className="mt-2 font-display text-3xl font-bold tracking-[-0.06em] text-ink">{activeSegments.length}</p>
+        <div className="flex-[1_1_calc(50%-0.25rem)] rounded-control border-2 border-line bg-surface p-3 shadow-card sm:flex-1 sm:p-4">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-ink-muted">Tramos activos</p>
+          <p className="mt-1 font-display text-2xl font-bold tracking-[-0.06em] text-ink sm:mt-2 sm:text-3xl">{activeSegments.length}</p>
         </div>
-        <div className="rounded-control border-2 border-line bg-surface p-4 shadow-card">
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">Bloques semanales</p>
-          <p className="mt-2 font-display text-3xl font-bold tracking-[-0.06em] text-ink">{totalBlocks}</p>
+        <div className="flex-[1_1_calc(50%-0.25rem)] rounded-control border-2 border-line bg-surface p-3 shadow-card sm:flex-1 sm:p-4">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-ink-muted">Bloques semanales</p>
+          <p className="mt-1 font-display text-2xl font-bold tracking-[-0.06em] text-ink sm:mt-2 sm:text-3xl">{totalBlocks}</p>
         </div>
       </section>
 

@@ -67,6 +67,7 @@ export function AgendaPage() {
       <BannerWrapper
         ariaLabel="Introducción de la agenda"
         dismissLabel="Ocultar introducción de la agenda"
+        storageKey="agenda-intro"
       >
         <div>
           <p className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-ink-muted">

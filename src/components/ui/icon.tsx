@@ -5,6 +5,7 @@ export type IconName =
   | 'arrow-right'
   | 'calendar'
   | 'check'
+  | 'chevron-down'
   | 'clock'
   | 'gear'
   | 'minus'
@@ -42,6 +43,7 @@ export function Icon({ name, size = 18, ...props }: IconProps) {
         </>
       ) : null}
       {name === 'check' ? <path d="m5 12 4.25 4.25L19 6.5" /> : null}
+      {name === 'chevron-down' ? <path d="m6 9 6 6 6-6" /> : null}
       {name === 'clock' ? (
         <>
           <circle cx="12" cy="12" r="8.75" />

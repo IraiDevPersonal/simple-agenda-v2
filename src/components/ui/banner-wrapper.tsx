@@ -12,8 +12,47 @@ type BannerWrapperProps = {
   children: ReactNode
   className?: string
   dismissLabel: string
+  storageKey: string
   restoreLabel?: string
   tone?: BannerTone
+}
+
+const BANNER_STORAGE_PREFIX = 'simple-agenda:banner:v1:'
+const HIDDEN_VALUE = 'hidden'
+
+function getStorageKey(storageKey: string) {
+  return `${BANNER_STORAGE_PREFIX}${storageKey}`
+}
+
+function getInitialVisibility(storageKey: string) {
+  if (typeof window === 'undefined') {
+    return true
+  }
+
+  try {
+    return window.localStorage.getItem(getStorageKey(storageKey)) !== HIDDEN_VALUE
+  } catch {
+    return true
+  }
+}
+
+function persistVisibility(storageKey: string, isVisible: boolean) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    const key = getStorageKey(storageKey)
+
+    if (isVisible) {
+      window.localStorage.removeItem(key)
+      return
+    }
+
+    window.localStorage.setItem(key, HIDDEN_VALUE)
+  } catch {
+    // La UI mantiene su estado en memoria si el navegador bloquea el storage.
+  }
 }
 
 const toneStyles: Record<BannerTone, { banner: string; dismiss: string }> = {
@@ -33,11 +72,17 @@ export function BannerWrapper({
   children,
   className,
   dismissLabel,
+  storageKey,
   restoreLabel = 'Mostrar introducción',
   tone = 'light',
 }: BannerWrapperProps) {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(() => getInitialVisibility(storageKey))
   const styles = toneStyles[tone]
+
+  function handleVisibilityChange(nextIsVisible: boolean) {
+    setIsVisible(nextIsVisible)
+    persistVisibility(storageKey, nextIsVisible)
+  }
 
   if (!isVisible) {
     return (
@@ -47,7 +92,11 @@ export function BannerWrapper({
         data-slot="banner-wrapper"
         data-state="closed"
       >
-        <AppButton onClick={() => setIsVisible(true)} type="button" variant="accent">
+        <AppButton
+          onClick={() => handleVisibilityChange(true)}
+          type="button"
+          variant="accent"
+        >
           <Icon name="spark" size={17} />
           {restoreLabel}
         </AppButton>
@@ -69,7 +118,7 @@ export function BannerWrapper({
       <IconButton
         className={cn('absolute right-3 top-3 z-10', styles.dismiss)}
         label={dismissLabel}
-        onClick={() => setIsVisible(false)}
+        onClick={() => handleVisibilityChange(false)}
         type="button"
       >
         <Icon name="x" size={17} />

@@ -11,12 +11,16 @@ export type Weekday =
   | 'saturday'
   | 'sunday'
 
+export type ServiceMode = 'remote' | 'in-person' | 'home-visit'
+
 export type ScheduleSegment = {
   id: string
   weekday: Weekday
   enabled: boolean
   startTime: string
   blockCount: number
+  excludedBlockIndexes?: number[]
+  serviceMode: ServiceMode
 }
 
 export type SlotStatus = 'available' | 'reserved' | 'blocked'
