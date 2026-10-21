@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 
 import { AppButton } from '@/components/ui/app-button'
+import { AppSelect } from '@/components/ui/app-select'
 import { BannerWrapper } from '@/components/ui/banner-wrapper'
 import { Icon } from '@/components/ui/icon'
 import { StatusPill } from '@/components/ui/status-pill'
@@ -8,7 +9,11 @@ import { ScheduleDayCard } from '@/features/schedule/components/schedule-day-car
 import { validateScheduleSegments } from '@/features/schedule/lib/schedule-validation'
 import { getScheduleBlockCount } from '@/lib/schedule-block-utils'
 import { useAgendaStore } from '@/stores/agenda-store'
-import type { Weekday } from '@/types/agenda'
+import {
+  APPOINTMENT_BUFFER_OPTIONS,
+  type AppointmentBufferMinutes,
+  type Weekday,
+} from '@/types/agenda'
 
 const weekdayItems: Array<{ value: Weekday; label: string }> = [
   { value: 'monday', label: 'lunes' },
@@ -22,10 +27,14 @@ const weekdayItems: Array<{ value: Weekday; label: string }> = [
 
 export function SchedulePage() {
   const [saveMessage, setSaveMessage] = useState('')
+  const appointmentBufferMinutes = useAgendaStore((state) => state.appointmentBufferMinutes)
   const scheduleSegments = useAgendaStore((state) => state.scheduleSegments)
   const addSegment = useAgendaStore((state) => state.addSegment)
   const removeSegment = useAgendaStore((state) => state.removeSegment)
   const resetDemoData = useAgendaStore((state) => state.resetDemoData)
+  const setAppointmentBufferMinutes = useAgendaStore(
+    (state) => state.setAppointmentBufferMinutes,
+  )
   const toggleWeekday = useAgendaStore((state) => state.toggleWeekday)
   const updateSegment = useAgendaStore((state) => state.updateSegment)
   const activeWeekdays = new Set(
@@ -35,10 +44,13 @@ export function SchedulePage() {
   )
   const activeSegments = scheduleSegments.filter((segment) => segment.enabled)
   const totalBlocks = activeSegments.reduce(
-    (total, segment) => total + getScheduleBlockCount(segment),
+    (total, segment) => total + getScheduleBlockCount(segment, appointmentBufferMinutes),
     0,
   )
-  const validationErrors = validateScheduleSegments(scheduleSegments)
+  const validationErrors = validateScheduleSegments(
+    scheduleSegments,
+    appointmentBufferMinutes,
+  )
   const hasInvalidSegments = Object.values(validationErrors).some(
     (errors) => errors.length > 0,
   )
@@ -118,6 +130,43 @@ export function SchedulePage() {
           <StatusPill status="available">45 min por bloque</StatusPill>
         </div>
 
+        <div className="flex flex-col gap-3 rounded-card border-2 border-line bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div>
+            <h3 className="font-display text-lg font-bold tracking-[-0.04em] text-ink">
+              Separación entre citas
+            </h3>
+            <p
+              className="mt-1 max-w-xl text-sm leading-relaxed text-ink-muted"
+              id="appointment-buffer-help"
+            >
+              Reserva un pequeño margen para preparar la siguiente atención.
+            </p>
+          </div>
+          <label className="grid w-full gap-1.5 text-xs font-bold uppercase tracking-[0.09em] text-ink-muted sm:max-w-56">
+            Tiempo entre citas
+            <AppSelect
+              aria-describedby="appointment-buffer-help"
+              aria-label="Tiempo entre citas"
+              name="appointment-buffer"
+              onChange={(event) => {
+                const value = Number(event.currentTarget.value)
+
+                if (APPOINTMENT_BUFFER_OPTIONS.includes(value as AppointmentBufferMinutes)) {
+                  setAppointmentBufferMinutes(value as AppointmentBufferMinutes)
+                  setSaveMessage('')
+                }
+              }}
+              value={appointmentBufferMinutes}
+            >
+              {APPOINTMENT_BUFFER_OPTIONS.map((minutes) => (
+                <option key={minutes} value={minutes}>
+                  {minutes === 0 ? 'Sin separación' : `${minutes} minutos`}
+                </option>
+              ))}
+            </AppSelect>
+          </label>
+        </div>
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="grid gap-3">
             {weekdayItems.map((day) => (
@@ -140,6 +189,7 @@ export function SchedulePage() {
                   setSaveMessage('')
                   updateSegment(segmentId, update)
                 }}
+                bufferMinutes={appointmentBufferMinutes}
                 segments={segmentsForDay(day.value)}
               />
             ))}

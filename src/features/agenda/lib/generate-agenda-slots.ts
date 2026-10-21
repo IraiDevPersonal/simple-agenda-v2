@@ -2,6 +2,7 @@ import { weekdayFromDateKey } from '@/lib/date-utils'
 import { getScheduleBlocks } from '@/lib/schedule-block-utils'
 import {
   type AgendaSlot,
+  type AppointmentBufferMinutes,
   type Appointment,
   type DateKey,
   type ScheduleSegment,
@@ -11,12 +12,14 @@ type GenerateAgendaSlotsInput = {
   date: DateKey
   scheduleSegments: ScheduleSegment[]
   appointments: Appointment[]
+  bufferMinutes?: AppointmentBufferMinutes
 }
 
 export function generateAgendaSlots({
   date,
   scheduleSegments,
   appointments,
+  bufferMinutes = 0,
 }: GenerateAgendaSlotsInput): AgendaSlot[] {
   const weekday = weekdayFromDateKey(date)
   const appointmentByStart = new Map(
@@ -29,7 +32,7 @@ export function generateAgendaSlots({
   scheduleSegments
     .filter((segment) => segment.enabled && segment.weekday === weekday)
     .forEach((segment) => {
-      for (const block of getScheduleBlocks(segment)) {
+      for (const block of getScheduleBlocks(segment, bufferMinutes)) {
         if (slotsByStart.has(block.startTime)) {
           continue
         }

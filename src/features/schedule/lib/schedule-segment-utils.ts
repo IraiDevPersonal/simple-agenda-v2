@@ -1,10 +1,18 @@
-import { SLOT_DURATION_MINUTES, type ScheduleSegment, type ServiceMode } from '@/types/agenda'
+import {
+  SLOT_DURATION_MINUTES,
+  type AppointmentBufferMinutes,
+  type ScheduleSegment,
+  type ServiceMode,
+} from '@/types/agenda'
 import { MINUTES_PER_DAY, minutesToTime, timeToMinutes } from '@/lib/time-utils'
 
 export const DEFAULT_SCHEDULE_START_TIME = '09:00'
 export const DEFAULT_SERVICE_MODE: ServiceMode = 'in-person'
 
-export function getSuggestedSegmentStartTime(segments: ScheduleSegment[]): string {
+export function getSuggestedSegmentStartTime(
+  segments: ScheduleSegment[],
+  bufferMinutes: AppointmentBufferMinutes = 0,
+): string {
   const previousSegment = segments.filter((segment) => segment.enabled).at(-1)
 
   if (!previousSegment) {
@@ -22,7 +30,9 @@ export function getSuggestedSegmentStartTime(segments: ScheduleSegment[]): strin
   }
 
   const nextStartMinutes =
-    previousStartMinutes + previousSegment.blockCount * SLOT_DURATION_MINUTES
+    previousStartMinutes +
+    previousSegment.blockCount * SLOT_DURATION_MINUTES +
+    previousSegment.blockCount * bufferMinutes
 
   if (nextStartMinutes > MINUTES_PER_DAY) {
     return DEFAULT_SCHEDULE_START_TIME

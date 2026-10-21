@@ -24,6 +24,11 @@ describe('schedule validation', () => {
     expect(getSegmentPreview(segment())).toEqual(['15:00', '15:45', '16:30'])
   })
 
+  it('aplica el buffer entre bloques al calcular la vista previa y el fin', () => {
+    expect(getSegmentEndTime(segment(), 10)).toBe('17:35')
+    expect(getSegmentPreview(segment(), 10)).toEqual(['15:00', '15:55', '16:50'])
+  })
+
   it('mantiene los bloques restantes cuando se quita uno intermedio', () => {
     expect(getSegmentPreview(segment({ excludedBlockIndexes: [1] }))).toEqual([
       '15:00',

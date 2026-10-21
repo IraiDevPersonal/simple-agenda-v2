@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef } from 'react'
+
 import { AppButton } from '@/components/ui/app-button'
 import { Icon } from '@/components/ui/icon'
 import { IconButton } from '@/components/ui/icon-button'
@@ -16,6 +18,54 @@ type DateStripProps = {
 }
 
 export function DateStrip({ dates, onSelect, onShift, selectedDate }: DateStripProps) {
+  const dateStripRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    function centerSelectedDate() {
+      const dateStrip = dateStripRef.current
+      const selectedButton = dateStrip?.querySelector<HTMLButtonElement>(
+        '[aria-current="date"]',
+      )
+
+      if (!dateStrip || !selectedButton || typeof dateStrip.scrollTo !== 'function') {
+        return
+      }
+
+      const maxScrollLeft = dateStrip.scrollWidth - dateStrip.clientWidth
+
+      if (maxScrollLeft <= 0) {
+        return
+      }
+
+      const prefersReducedMotion =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+      const dateStripRect = dateStrip.getBoundingClientRect()
+      const selectedButtonRect = selectedButton.getBoundingClientRect()
+      const targetScrollLeft =
+        dateStrip.scrollLeft +
+        selectedButtonRect.left -
+        dateStripRect.left -
+        (dateStrip.clientWidth - selectedButtonRect.width) / 2
+
+      dateStrip.scrollTo({
+        left: Math.max(0, Math.min(targetScrollLeft, maxScrollLeft)),
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      })
+    }
+
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') {
+      centerSelectedDate()
+      return
+    }
+
+    const frame = window.requestAnimationFrame(centerSelectedDate)
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [selectedDate])
+
   return (
     <section aria-label="Días de la semana" className="mt-5">
       <div className="flex items-center gap-2">
@@ -23,7 +73,10 @@ export function DateStrip({ dates, onSelect, onShift, selectedDate }: DateStripP
           <Icon name="arrow-left" />
         </IconButton>
 
-        <div className="scrollbar-none flex min-w-0 flex-1 gap-2 overflow-x-auto px-1 py-1">
+        <div
+          className="scrollbar-none flex min-w-0 flex-1 gap-2 overflow-x-auto px-1 py-1"
+          ref={dateStripRef}
+        >
           {dates.map((date) => {
             const isSelected = date === selectedDate
 

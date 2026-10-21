@@ -3,7 +3,7 @@ import { Icon } from '@/components/ui/icon'
 import { ScheduleSegmentEditor } from '@/features/schedule/components/schedule-segment-editor'
 import { validateScheduleSegment } from '@/features/schedule/lib/schedule-validation'
 import { cn } from '@/lib/cn'
-import type { ScheduleSegment } from '@/types/agenda'
+import type { AppointmentBufferMinutes, ScheduleSegment } from '@/types/agenda'
 
 type ScheduleDayCardProps = {
   label: string
@@ -17,6 +17,7 @@ type ScheduleDayCardProps = {
     >,
   ) => void
   onRemove: (segmentId: string) => void
+  bufferMinutes?: AppointmentBufferMinutes
 }
 
 export function ScheduleDayCard({
@@ -26,6 +27,7 @@ export function ScheduleDayCard({
   onToggle,
   onUpdate,
   segments,
+  bufferMinutes = 0,
 }: ScheduleDayCardProps) {
   const activeSegments = segments.filter((segment) => segment.enabled)
   const activeSegmentCount = activeSegments.length
@@ -78,11 +80,13 @@ export function ScheduleDayCard({
               errors={validateScheduleSegment(
                 segment,
                 segments,
+                bufferMinutes,
               )}
               key={segment.id}
               onChange={(update) => onUpdate(segment.id, update)}
               onRemove={() => onRemove(segment.id)}
               segment={segment}
+              bufferMinutes={bufferMinutes}
             />
           ))}
         </div>

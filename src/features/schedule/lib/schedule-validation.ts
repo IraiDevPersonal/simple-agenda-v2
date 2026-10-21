@@ -1,21 +1,35 @@
-import { SLOT_DURATION_MINUTES, type ScheduleSegment } from '@/types/agenda'
+import {
+  SLOT_DURATION_MINUTES,
+  type AppointmentBufferMinutes,
+  type ScheduleSegment,
+} from '@/types/agenda'
 import { MINUTES_PER_DAY, timeToMinutes } from '@/lib/time-utils'
 import { getScheduleBlocks } from '@/lib/schedule-block-utils'
 
 export type ScheduleValidationErrors = Record<string, string[]>
 
-function segmentEndMinutes(segment: ScheduleSegment): number | null {
+function segmentEndMinutes(
+  segment: ScheduleSegment,
+  bufferMinutes: AppointmentBufferMinutes = 0,
+): number | null {
   const startMinutes = timeToMinutes(segment.startTime)
 
   if (startMinutes === null || !Number.isInteger(segment.blockCount)) {
     return null
   }
 
-  return startMinutes + segment.blockCount * SLOT_DURATION_MINUTES
+  return (
+    startMinutes +
+    segment.blockCount * SLOT_DURATION_MINUTES +
+    Math.max(0, segment.blockCount - 1) * bufferMinutes
+  )
 }
 
-export function getSegmentEndTime(segment: ScheduleSegment): string | null {
-  const endMinutes = segmentEndMinutes(segment)
+export function getSegmentEndTime(
+  segment: ScheduleSegment,
+  bufferMinutes: AppointmentBufferMinutes = 0,
+): string | null {
+  const endMinutes = segmentEndMinutes(segment, bufferMinutes)
 
   if (endMinutes === null || endMinutes > MINUTES_PER_DAY || endMinutes <= 0) {
     return null
@@ -27,13 +41,17 @@ export function getSegmentEndTime(segment: ScheduleSegment): string | null {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 }
 
-export function getSegmentPreview(segment: ScheduleSegment): string[] {
-  return getScheduleBlocks(segment).map((block) => block.startTime)
+export function getSegmentPreview(
+  segment: ScheduleSegment,
+  bufferMinutes: AppointmentBufferMinutes = 0,
+): string[] {
+  return getScheduleBlocks(segment, bufferMinutes).map((block) => block.startTime)
 }
 
 export function validateScheduleSegment(
   segment: ScheduleSegment,
   siblings: ScheduleSegment[] = [],
+  bufferMinutes: AppointmentBufferMinutes = 0,
 ): string[] {
   if (!segment.enabled) {
     return []
@@ -41,7 +59,7 @@ export function validateScheduleSegment(
 
   const errors: string[] = []
   const startMinutes = timeToMinutes(segment.startTime)
-  const endMinutes = segmentEndMinutes(segment)
+  const endMinutes = segmentEndMinutes(segment, bufferMinutes)
 
   if (startMinutes === null) {
     errors.push('Elige una hora de inicio válida.')
@@ -56,7 +74,7 @@ export function validateScheduleSegment(
     segment.blockCount > 0 &&
     endMinutes !== null &&
     endMinutes <= MINUTES_PER_DAY &&
-    getScheduleBlocks(segment).length === 0
+    getScheduleBlocks(segment, bufferMinutes).length === 0
   ) {
     errors.push('Añade al menos un bloque de 45 minutos.')
   }
@@ -76,7 +94,7 @@ export function validateScheduleSegment(
       }
 
       const siblingStart = timeToMinutes(sibling.startTime)
-      const siblingEnd = segmentEndMinutes(sibling)
+      const siblingEnd = segmentEndMinutes(sibling, bufferMinutes)
 
       return (
         siblingStart !== null &&
@@ -97,6 +115,7 @@ export function validateScheduleSegment(
 
 export function validateScheduleSegments(
   segments: ScheduleSegment[],
+  bufferMinutes: AppointmentBufferMinutes = 0,
 ): ScheduleValidationErrors {
   return Object.fromEntries(
     segments.map((segment) => [
@@ -104,6 +123,7 @@ export function validateScheduleSegments(
       validateScheduleSegment(
         segment,
         segments.filter((candidate) => candidate.weekday === segment.weekday),
+        bufferMinutes,
       ),
     ]),
   )

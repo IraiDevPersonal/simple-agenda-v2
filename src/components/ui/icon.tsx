@@ -3,11 +3,13 @@ import type { SVGProps } from 'react'
 export type IconName =
   | 'arrow-left'
   | 'arrow-right'
+  | 'camera'
   | 'calendar'
   | 'check'
   | 'chevron-down'
   | 'clock'
   | 'gear'
+  | 'user'
   | 'minus'
   | 'plus'
   | 'spark'
@@ -36,6 +38,12 @@ export function Icon({ name, size = 18, ...props }: IconProps) {
     >
       {name === 'arrow-left' ? <path d="m15 18-6-6 6-6" /> : null}
       {name === 'arrow-right' ? <path d="m9 18 6-6-6-6" /> : null}
+      {name === 'camera' ? (
+        <>
+          <path d="M4.5 7.5h3l1.25-2h6.5l1.25 2h3A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5V9a1.5 1.5 0 0 1 1.5-1.5Z" />
+          <circle cx="12" cy="13.5" r="3.25" />
+        </>
+      ) : null}
       {name === 'calendar' ? (
         <>
           <rect height="17" rx="2.5" width="18" x="3" y="4.5" />
@@ -54,6 +62,12 @@ export function Icon({ name, size = 18, ...props }: IconProps) {
         <>
           <path d="m12 3 1.2 1.9 2.25.45.55 2.2 1.9 1.2-.75 2.15.75 2.15-1.9 1.2-.55 2.2-2.25.45L12 21l-1.2-1.9-2.25-.45-.55-2.2-1.9-1.2.75-2.15-.75-2.15 1.9-1.2.55-2.2 2.25-.45L12 3Z" />
           <circle cx="12" cy="12" r="2.75" />
+        </>
+      ) : null}
+      {name === 'user' ? (
+        <>
+          <circle cx="12" cy="8" r="3.25" />
+          <path d="M4.5 20c.8-3.3 3.3-5 7.5-5s6.7 1.7 7.5 5" />
         </>
       ) : null}
       {name === 'minus' ? <path d="M5 12h14" /> : null}

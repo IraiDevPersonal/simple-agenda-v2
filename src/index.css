@@ -31,6 +31,8 @@
 
   --shadow-card: 0 1px 0 rgba(27, 29, 27, 0.08), 0 12px 28px rgba(27, 29, 27, 0.06);
   --shadow-float: 0 16px 34px rgba(27, 29, 27, 0.12);
+  --shadow-navigation-float: 0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 8px 20px rgba(27, 29, 27, 0.08), 0 22px 42px rgba(27, 29, 27, 0.1);
   --shadow-action: 3px 3px 0 var(--color-ink);
   --shadow-action-hover: 1px 1px 0 var(--color-ink);
   --shadow-action-lift: 5px 5px 0 var(--color-ink);

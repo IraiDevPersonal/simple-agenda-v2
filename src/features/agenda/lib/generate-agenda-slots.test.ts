@@ -38,6 +38,30 @@ describe('generateAgendaSlots', () => {
     ])
   })
 
+  it('aplica la separación entre bloques sin extender el último bloque', () => {
+    const slots = generateAgendaSlots({
+      appointments: [],
+      bufferMinutes: 10,
+      date: '2026-08-04',
+      scheduleSegments: [
+        {
+          blockCount: 3,
+          enabled: true,
+          id: 'segment-tuesday-buffer-test',
+          startTime: '10:00',
+          serviceMode: 'in-person',
+          weekday: 'tuesday',
+        },
+      ],
+    })
+
+    expect(slots.map((slot) => [slot.startTime, slot.endTime])).toEqual([
+      ['10:00', '10:45'],
+      ['10:55', '11:40'],
+      ['11:50', '12:35'],
+    ])
+  })
+
   it('asocia el estado y la cita dummy al bloque correcto', () => {
     const slots = generateAgendaSlots({
       appointments: demoAppointments,

@@ -21,6 +21,7 @@ const segment = (overrides: Partial<ScheduleSegment> = {}): ScheduleSegment => (
 describe('schedule segment utils', () => {
   it('sugiere el fin del último tramo activo como inicio del siguiente', () => {
     expect(getSuggestedSegmentStartTime([segment()])).toBe('12:15')
+    expect(getSuggestedSegmentStartTime([segment()], 10)).toBe('12:45')
     expect(getSuggestedServiceMode([segment()])).toBe('remote')
   })
 

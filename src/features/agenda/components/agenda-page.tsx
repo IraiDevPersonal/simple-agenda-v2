@@ -7,7 +7,6 @@ import { BannerWrapper } from "@/components/ui/banner-wrapper";
 import { Icon } from "@/components/ui/icon";
 import { IconButton } from "@/components/ui/icon-button";
 import { StatusPill } from "@/components/ui/status-pill";
-import { DEMO_DATE } from "@/data/demo-data";
 import { AgendaSlotCard } from "@/features/agenda/components/agenda-slot-card";
 import { DateStrip } from "@/features/agenda/components/date-strip";
 import { generateAgendaSlots } from "@/features/agenda/lib/generate-agenda-slots";
@@ -26,14 +25,18 @@ export function AgendaPage() {
   const search = useSearch({ from: "/agenda" });
   const navigate = useNavigate({ from: "/agenda" });
   const [isPending, startTransition] = useTransition();
+  const appointmentBufferMinutes = useAgendaStore(
+    (state) => state.appointmentBufferMinutes,
+  );
   const scheduleSegments = useAgendaStore((state) => state.scheduleSegments);
   const appointments = useAgendaStore((state) => state.appointments);
-  const selectedDate = search.date ?? DEMO_DATE;
+  const selectedDate = search.date ?? todayDateKey();
   const dates = getWeekDates(selectedDate);
   const slots = generateAgendaSlots({
     appointments,
     date: selectedDate,
     scheduleSegments,
+    bufferMinutes: appointmentBufferMinutes,
   });
   const reservedCount = slots.filter(
     (slot) => slot.status === "reserved",

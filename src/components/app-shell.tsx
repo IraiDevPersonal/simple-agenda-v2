@@ -2,17 +2,12 @@ import type { ReactNode } from 'react'
 
 import { Link } from '@tanstack/react-router'
 
+import { AppNavigation } from '@/components/app-navigation'
 import { Icon } from '@/components/ui/icon'
-import { cn } from '@/lib/cn'
 
 type AppShellProps = {
   children: ReactNode
 }
-
-const navigationItems = [
-  { label: 'Agenda', to: '/agenda' as const, icon: 'calendar' as const },
-  { label: 'Horarios', to: '/horarios' as const, icon: 'gear' as const },
-]
 
 export function AppShell({ children }: AppShellProps) {
   return (
@@ -40,23 +35,6 @@ export function AppShell({ children }: AppShellProps) {
             </span>
           </Link>
 
-          <nav aria-label="Navegación principal" className="hidden items-center gap-1 sm:flex">
-            {navigationItems.map((item) => (
-              <Link
-                activeProps={{
-                  className: 'bg-ink text-surface shadow-action-accent',
-                }}
-                className="inline-flex min-h-10 items-center gap-2 rounded-pill px-4 text-sm font-bold text-ink-muted transition hover:bg-surface-subtle hover:text-ink"
-                key={item.to}
-                preload="intent"
-                to={item.to}
-              >
-                <Icon name={item.icon} size={16} />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
           <div className="hidden items-center gap-2 text-right sm:block">
             <p className="text-xs font-bold text-ink">Demo local</p>
             <p className="text-[0.68rem] text-ink-muted">sin datos conectados</p>
@@ -64,32 +42,11 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </header>
 
-      <main id="main-content" className="mx-auto max-w-6xl px-4 pb-28 pt-6 sm:px-6 sm:pb-12 lg:px-8">
+      <main id="main-content" className="mx-auto max-w-6xl px-4 pb-32 pt-6 sm:px-6 lg:px-8">
         {children}
       </main>
 
-      <nav
-        aria-label="Navegación móvil"
-        className="fixed inset-x-4 bottom-4 z-30 grid grid-cols-2 rounded-card border-2 border-ink bg-surface p-1.5 shadow-float sm:hidden"
-      >
-        {navigationItems.map((item) => (
-          <Link
-            activeProps={{
-              className: 'bg-ink text-surface shadow-action-accent',
-            }}
-            className={cn(
-              'flex min-h-12 items-center justify-center gap-2 rounded-[1.1rem] text-sm font-bold text-ink-muted transition',
-              'hover:bg-surface-subtle hover:text-ink',
-            )}
-            key={item.to}
-            preload="intent"
-            to={item.to}
-          >
-            <Icon name={item.icon} size={17} />
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <AppNavigation />
     </div>
   )
 }

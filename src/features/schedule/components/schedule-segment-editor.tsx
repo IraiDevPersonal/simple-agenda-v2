@@ -7,7 +7,11 @@ import { ScheduleBlockChip } from '@/features/schedule/components/schedule-block
 import { getSegmentEndTime } from '@/features/schedule/lib/schedule-validation'
 import { cn } from '@/lib/cn'
 import { getScheduleBlocks } from '@/lib/schedule-block-utils'
-import type { ScheduleSegment, ServiceMode } from '@/types/agenda'
+import type {
+  AppointmentBufferMinutes,
+  ScheduleSegment,
+  ServiceMode,
+} from '@/types/agenda'
 
 const serviceModeOptions: Array<{ value: ServiceMode; label: string }> = [
   { value: 'remote', label: 'Remoto' },
@@ -17,6 +21,7 @@ const serviceModeOptions: Array<{ value: ServiceMode; label: string }> = [
 
 type ScheduleSegmentEditorProps = {
   segment: ScheduleSegment
+  bufferMinutes?: AppointmentBufferMinutes
   errors: string[]
   onChange: (
     update: Partial<
@@ -31,14 +36,18 @@ export function ScheduleSegmentEditor({
   onChange,
   onRemove,
   segment,
+  bufferMinutes = 0,
 }: ScheduleSegmentEditorProps) {
-  const endTime = getSegmentEndTime(segment)
-  const blocks = getScheduleBlocks(segment)
+  const endTime = getSegmentEndTime(segment, bufferMinutes)
+  const blocks = getScheduleBlocks(segment, bufferMinutes)
   const hasErrors = errors.length > 0
-  const nextBlockEndTime = getSegmentEndTime({
-    ...segment,
-    blockCount: segment.blockCount + 1,
-  })
+  const nextBlockEndTime = getSegmentEndTime(
+    {
+      ...segment,
+      blockCount: segment.blockCount + 1,
+    },
+    bufferMinutes,
+  )
   const canAddBlock = nextBlockEndTime !== null
 
   function handleAddBlock() {

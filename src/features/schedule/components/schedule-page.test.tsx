@@ -24,4 +24,17 @@ describe('SchedulePage', () => {
       'Corrige los tramos marcados antes de guardar tu disponibilidad.',
     )
   })
+
+  it('permite configurar la separación entre citas', () => {
+    render(<SchedulePage />)
+
+    const bufferSelect = screen.getByRole('combobox', { name: 'Tiempo entre citas' })
+
+    expect(bufferSelect).toHaveValue('0')
+    fireEvent.change(bufferSelect, { target: { value: '10' } })
+
+    expect(bufferSelect).toHaveValue('10')
+    expect(useAgendaStore.getState().appointmentBufferMinutes).toBe(10)
+    expect(screen.getAllByText('10:55').length).toBeGreaterThan(0)
+  })
 })

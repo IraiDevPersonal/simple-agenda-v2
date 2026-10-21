@@ -7,7 +7,12 @@ import {
   getSuggestedSegmentStartTime,
   getSuggestedServiceMode,
 } from '@/features/schedule/lib/schedule-segment-utils'
-import type { ScheduleSegment, Weekday } from '@/types/agenda'
+import {
+  DEFAULT_APPOINTMENT_BUFFER_MINUTES,
+  type AppointmentBufferMinutes,
+  type ScheduleSegment,
+  type Weekday,
+} from '@/types/agenda'
 
 type ScheduleSegmentUpdate = Partial<
   Pick<
@@ -17,8 +22,10 @@ type ScheduleSegmentUpdate = Partial<
 >
 
 type AgendaStore = {
+  appointmentBufferMinutes: AppointmentBufferMinutes
   scheduleSegments: ScheduleSegment[]
   appointments: typeof demoAppointments
+  setAppointmentBufferMinutes: (minutes: AppointmentBufferMinutes) => void
   toggleWeekday: (weekday: Weekday, enabled: boolean) => void
   addSegment: (weekday: Weekday) => void
   updateSegment: (segmentId: string, update: ScheduleSegmentUpdate) => void
@@ -31,8 +38,10 @@ function createSegmentId(weekday: Weekday): string {
 }
 
 export const useAgendaStore = create<AgendaStore>((set) => ({
+  appointmentBufferMinutes: DEFAULT_APPOINTMENT_BUFFER_MINUTES,
   scheduleSegments: demoScheduleSegments,
   appointments: demoAppointments,
+  setAppointmentBufferMinutes: (minutes) => set({ appointmentBufferMinutes: minutes }),
   toggleWeekday: (weekday, enabled) =>
     set((state) => {
       const weekdaySegments = state.scheduleSegments.filter(
@@ -74,7 +83,10 @@ export const useAgendaStore = create<AgendaStore>((set) => ({
             id: createSegmentId(weekday),
             weekday,
             enabled: true,
-            startTime: getSuggestedSegmentStartTime(weekdaySegments),
+            startTime: getSuggestedSegmentStartTime(
+              weekdaySegments,
+              state.appointmentBufferMinutes,
+            ),
             blockCount: 2,
             serviceMode: getSuggestedServiceMode(weekdaySegments),
           },
@@ -95,6 +107,7 @@ export const useAgendaStore = create<AgendaStore>((set) => ({
     })),
   resetDemoData: () =>
     set({
+      appointmentBufferMinutes: DEFAULT_APPOINTMENT_BUFFER_MINUTES,
       scheduleSegments: demoScheduleSegments,
       appointments: demoAppointments,
     }),

@@ -23,6 +23,14 @@ describe('useAgendaStore', () => {
     ).toBe(true)
   })
 
+  it('actualiza y restaura la separación entre citas', () => {
+    useAgendaStore.getState().setAppointmentBufferMinutes(10)
+    expect(useAgendaStore.getState().appointmentBufferMinutes).toBe(10)
+
+    useAgendaStore.getState().resetDemoData()
+    expect(useAgendaStore.getState().appointmentBufferMinutes).toBe(0)
+  })
+
   it('agrega, edita y elimina un tramo', () => {
     const store = useAgendaStore.getState()
     const initialCount = store.scheduleSegments.length
