@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as HorariosRouteImport } from './routes/horarios'
+import { Route as PagosRouteImport } from './routes/pagos'
 import { Route as PerfilRouteImport } from './routes/perfil'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const HorariosRoute = HorariosRouteImport.update({
   path: '/horarios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagosRoute = PagosRouteImport.update({
+  id: '/pagos',
+  path: '/pagos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/horarios': typeof HorariosRoute
+  '/pagos': typeof PagosRoute
   '/perfil': typeof PerfilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/horarios': typeof HorariosRoute
+  '/pagos': typeof PagosRoute
   '/perfil': typeof PerfilRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/horarios': typeof HorariosRoute
+  '/pagos': typeof PagosRoute
   '/perfil': typeof PerfilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agenda' | '/horarios' | '/perfil'
+  fullPaths: '/' | '/agenda' | '/horarios' | '/pagos' | '/perfil'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agenda' | '/horarios' | '/perfil'
-  id: '__root__' | '/' | '/agenda' | '/horarios' | '/perfil'
+  to: '/' | '/agenda' | '/horarios' | '/pagos' | '/perfil'
+  id: '__root__' | '/' | '/agenda' | '/horarios' | '/pagos' | '/perfil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
   HorariosRoute: typeof HorariosRoute
+  PagosRoute: typeof PagosRoute
   PerfilRoute: typeof PerfilRoute
 }
 
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HorariosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pagos': {
+      id: '/pagos'
+      path: '/pagos'
+      fullPath: '/pagos'
+      preLoaderRoute: typeof PagosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/perfil': {
       id: '/perfil'
       path: '/perfil'
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
   HorariosRoute: HorariosRoute,
+  PagosRoute: PagosRoute,
   PerfilRoute: PerfilRoute,
 }
 export const routeTree = rootRouteImport
