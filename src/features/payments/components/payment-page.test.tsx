@@ -20,6 +20,7 @@ describe('PaymentPage', () => {
     expect(screen.getByRole('switch', { name: 'Remoto para Particular' })).toBeChecked()
     expect(screen.getByRole('switch', { name: 'A domicilio para Particular' })).toBeChecked()
     expect(screen.getByRole('switch', { name: 'Mismo precio para todas las modalidades de Particular' })).not.toBeChecked()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar detalles de Fonasa' }))
     expect(screen.getByRole('switch', { name: 'Mismo precio para todas las modalidades de Fonasa' })).toBeChecked()
     expect(screen.getByRole('textbox', { name: 'Valor común para Particular' })).toBeDisabled()
     expect(screen.getByRole('textbox', { name: 'Valor común para Fonasa' })).toHaveValue('$25.000')
@@ -84,8 +85,17 @@ describe('PaymentPage', () => {
 
     expect(usePaymentStore.getState().settings.proofDeadlineHours).toBe(24)
     expect(usePaymentStore.getState().settings.transferDetails.bank).toBe('Banco Estado')
-    expect(screen.getByRole('status')).toHaveTextContent(
+    expect(screen.getByText(
       'Configuración de pagos guardada en esta sesión de demo.',
-    )
+    )).toBeInTheDocument()
+  })
+
+  it('permite guardar las tarifas de forma independiente', () => {
+    render(<PaymentPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar tarifas' }))
+
+    expect(screen.getByText('Tarifas guardadas en esta sesión de demo.')).toBeInTheDocument()
+    expect(screen.getByText('Los cambios se mantienen en esta sesión de demo.')).toBeInTheDocument()
   })
 })

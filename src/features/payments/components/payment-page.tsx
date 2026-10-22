@@ -129,8 +129,18 @@ function ToggleControl({
       />
       <span
         aria-hidden="true"
-        className="relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-line-strong bg-canvas shadow-inner transition-colors duration-200 ease-out peer-checked:border-ink peer-checked:bg-accent peer-focus-visible:ring-4 peer-focus-visible:ring-focus/20 after:absolute after:left-1 after:top-1 after:size-3 after:rounded-full after:bg-ink-muted after:shadow-sm after:transition-transform after:duration-200 after:ease-out after:content-[''] peer-checked:after:translate-x-5 peer-checked:after:bg-ink"
-      />
+        className={cn(
+          'relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 bg-canvas shadow-inner transition-colors duration-200 ease-out peer-focus-visible:ring-4 peer-focus-visible:ring-focus/20',
+          checked ? 'border-ink bg-accent' : 'border-line-strong',
+        )}
+      >
+        <span
+          className={cn(
+            'absolute top-1/2 size-3.5 -translate-y-1/2 rounded-full shadow-sm transition-[background-color,left,right] duration-200 ease-out',
+            checked ? 'right-1 bg-ink' : 'left-1 bg-ink-muted',
+          )}
+        />
+      </span>
       <span className="grid min-w-0 gap-0.5 text-sm">
         <span className="font-bold leading-tight text-ink">{label}</span>
       </span>
@@ -154,159 +164,265 @@ function withSharedPricingAmount(pricing: PaymentPricing, amount: number) {
   return amounts
 }
 
+function PricingSummary({ pricing }: { pricing: PaymentPricing }) {
+  const activeModes = serviceModeOptions.filter((option) =>
+    pricing.serviceModes.includes(option.value),
+  )
+  const summaryItems = pricing.samePriceForAll
+    ? activeModes.length > 0
+      ? [
+          {
+            id: 'shared',
+            label: activeModes.map((option) => option.label).join(' · '),
+            amount: pricing.samePriceAmount,
+          },
+        ]
+      : []
+    : activeModes.map((option) => ({
+        id: option.value,
+        label: option.label,
+        amount: pricing.amounts[option.value] ?? 0,
+      }))
+
+  return (
+    <div className="mt-2 flex min-w-0 flex-wrap gap-1.5">
+      {summaryItems.length > 0 ? (
+        summaryItems.map((item) => (
+          <span
+            className="inline-flex max-w-full items-center gap-1.5 rounded-pill border border-line bg-surface px-2 py-1 text-xs font-semibold text-ink-muted"
+            key={item.id}
+          >
+            <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-accent-ink" />
+            <span className="truncate">{item.label}</span>
+            <span className="shrink-0 font-mono font-bold text-ink">
+              {formatChileanPesos(item.amount)}
+            </span>
+          </span>
+        ))
+      ) : (
+        <span className="rounded-pill border border-dashed border-line-strong px-2 py-1 text-xs font-semibold text-ink-muted">
+          Sin modalidades activas
+        </span>
+      )}
+    </div>
+  )
+}
+
 function PaymentPricingEditor({ index, onChange, onRemove, pricing }: PaymentPricingEditorProps) {
   const label = pricing.name.trim() || `Tarifa ${index + 1}`
   const modesHelpId = `${pricing.id}-modes-help`
+  const panelId = `${pricing.id}-editor`
+  const toggleId = `${pricing.id}-toggle`
+  const [isOpen, setIsOpen] = useState(index === 0)
+  const activeModeCount = pricing.serviceModes.length
 
   return (
-    <li className="rounded-control border-2 border-line bg-surface-subtle p-3 sm:p-4">
-      <div className="flex items-start gap-3 border-b border-line pb-3">
-        <label
-          className="grid min-w-0 flex-1 gap-1.5 text-xs font-bold uppercase tracking-[0.09em] text-ink-muted"
-          htmlFor={`${pricing.id}-name`}
-        >
-          Nombre de la tarifa
-          <AppInput
-            autoComplete="off"
-            className="h-10 min-h-0 px-2.5 py-2 text-sm"
-            id={`${pricing.id}-name`}
-            onChange={(event) => onChange({ name: event.currentTarget.value })}
-            placeholder="Ej. Particular"
-            required
-            type="text"
-            value={pricing.name}
-          />
-        </label>
-
-        <IconButton
-          className="mt-5"
-          label={`Eliminar ${label}`}
-          onClick={onRemove}
+    <li
+      className={cn(
+        'min-w-0 rounded-control border-2 border-line bg-surface-subtle transition-colors duration-200 ease-out',
+        isOpen && 'border-line-strong bg-surface',
+      )}
+    >
+      <div className="flex items-start gap-2 p-2 sm:p-3">
+        <button
+          aria-controls={panelId}
+          aria-expanded={isOpen}
+          aria-label={`${isOpen ? 'Ocultar' : 'Mostrar'} detalles de ${label}`}
+          className="group flex min-w-0 flex-1 items-center gap-3 rounded-control px-2 py-1.5 text-left outline-none transition-colors hover:bg-surface focus-visible:ring-4 focus-visible:ring-focus/20"
+          id={toggleId}
+          onClick={() => setIsOpen((current) => !current)}
           type="button"
         >
-          <Icon name="trash" size={17} />
-        </IconButton>
+          <span className="min-w-0 flex-1">
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="font-display text-lg font-bold tracking-[-0.04em] text-ink">
+                {label}
+              </span>
+              <span className="rounded-pill bg-surface px-2 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-ink-muted">
+                {activeModeCount}{' '}
+                {activeModeCount === 1 ? 'modalidad activa' : 'modalidades activas'}
+              </span>
+              {pricing.samePriceForAll ? (
+                <span className="rounded-pill bg-accent-soft px-2 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em] text-accent-ink">
+                  Precio único
+                </span>
+              ) : null}
+            </span>
+            <PricingSummary pricing={pricing} />
+          </span>
+          <span
+            aria-hidden="true"
+            className={cn(
+              'inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface text-ink-muted shadow-sm transition-[background-color,border-color,color,transform] duration-300 ease-out motion-reduce:transition-none group-hover:border-ink group-hover:text-ink group-focus-visible:border-ink group-focus-visible:text-ink',
+              isOpen && 'rotate-180 border-accent-ink bg-accent-soft text-accent-ink',
+            )}
+          >
+            <Icon name="chevron-down" size={16} />
+          </span>
+        </button>
       </div>
 
-      <fieldset aria-describedby={modesHelpId} className="mt-3 min-w-0">
-        <legend className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted">
-          Modalidades y valores
-        </legend>
-        <p
-          className="mt-1 text-xs font-medium normal-case tracking-normal text-ink-muted"
-          id={modesHelpId}
-        >
-          Activa las modalidades que ofrecerás y define el valor de cada una.
-        </p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {serviceModeOptions.map((option) => {
-            const isSelected = pricing.serviceModes.includes(option.value)
-            const switchId = `${pricing.id}-${option.value}-enabled`
-            const amountId = `${pricing.id}-${option.value}-amount`
-
-            return (
-              <div
-                className="flex min-h-12 items-center gap-2 rounded-control border border-line bg-surface p-2"
-                key={option.value}
+      <div
+        aria-hidden={!isOpen}
+        aria-labelledby={toggleId}
+        className={cn(
+          'grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none',
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'pointer-events-none',
+        )}
+        id={panelId}
+        inert={!isOpen}
+        role="region"
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="border-t border-line px-3 pb-3 pt-3 sm:px-4 sm:pb-4">
+            <div className="flex items-end gap-2 border-b border-line pb-3">
+              <label
+                className="grid min-w-0 flex-1 gap-1.5 text-xs font-bold uppercase tracking-[0.09em] text-ink-muted"
+                htmlFor={`${pricing.id}-name`}
               >
-                <ToggleControl
-                  ariaLabel={`${option.label} para ${label}`}
-                  checked={isSelected}
-                  className="min-w-0 flex-1"
-                  id={switchId}
-                  label={option.label}
-                  onChange={() => {
-                    const serviceModes = isSelected
-                      ? pricing.serviceModes.filter((mode) => mode !== option.value)
-                      : [...pricing.serviceModes, option.value]
-                    const amounts =
-                      !isSelected && pricing.samePriceForAll
-                        ? {
-                            ...pricing.amounts,
-                            [option.value]: pricing.samePriceAmount,
-                          }
-                        : pricing.amounts
+                Nombre de la tarifa
+                <AppInput
+                  autoComplete="off"
+                  className="h-10 min-h-0 px-2.5 py-2 text-sm"
+                  id={`${pricing.id}-name`}
+                  onChange={(event) => onChange({ name: event.currentTarget.value })}
+                  placeholder="Ej. Particular"
+                  required
+                  type="text"
+                  value={pricing.name}
+                />
+              </label>
+              <IconButton
+                label={`Eliminar ${label}`}
+                onClick={onRemove}
+                type="button"
+              >
+                <Icon name="trash" size={17} />
+              </IconButton>
+            </div>
 
-                    onChange({ amounts, serviceModes })
+            <fieldset aria-describedby={modesHelpId} className="mt-3 min-w-0">
+              <legend className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted">
+                Modalidades y valores
+              </legend>
+              <p
+                className="mt-1 text-xs font-medium normal-case tracking-normal text-ink-muted"
+                id={modesHelpId}
+              >
+                Activa las modalidades que ofrecerás y define el valor de cada una.
+              </p>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {serviceModeOptions.map((option) => {
+                  const isSelected = pricing.serviceModes.includes(option.value)
+                  const switchId = `${pricing.id}-${option.value}-enabled`
+                  const amountId = `${pricing.id}-${option.value}-amount`
+
+                  return (
+                    <div
+                      className="flex min-h-12 items-center gap-2 rounded-control border border-line bg-surface p-2"
+                      key={option.value}
+                    >
+                      <ToggleControl
+                        ariaLabel={`${option.label} para ${label}`}
+                        checked={isSelected}
+                        className="min-w-0 flex-1"
+                        id={switchId}
+                        label={option.label}
+                        onChange={() => {
+                          const serviceModes = isSelected
+                            ? pricing.serviceModes.filter((mode) => mode !== option.value)
+                            : [...pricing.serviceModes, option.value]
+                          const amounts =
+                            !isSelected && pricing.samePriceForAll
+                              ? {
+                                  ...pricing.amounts,
+                                  [option.value]: pricing.samePriceAmount,
+                                }
+                              : pricing.amounts
+
+                          onChange({ amounts, serviceModes })
+                        }}
+                      />
+                      <label className="w-28 shrink-0 sm:w-32" htmlFor={amountId}>
+                        <span className="sr-only">Valor de {option.label} para {label}</span>
+                        <AppInput
+                          aria-label={`Valor de ${option.label} para ${label}`}
+                          autoComplete="off"
+                          className="h-10 min-h-0 px-2.5 py-2 text-sm disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-ink-muted disabled:hover:border-line-strong"
+                          disabled={!isSelected || pricing.samePriceForAll}
+                          id={amountId}
+                          inputMode="numeric"
+                          onChange={(event) => {
+                            const amount = parseChileanPesos(event.currentTarget.value)
+                            const amounts = pricing.samePriceForAll
+                              ? withSharedPricingAmount(pricing, amount)
+                              : { ...pricing.amounts, [option.value]: amount }
+
+                            onChange({ amounts })
+                          }}
+                          placeholder="Valor"
+                          type="text"
+                          value={
+                            isSelected ? formatChileanPesos(pricing.amounts[option.value] ?? 0) : ''
+                          }
+                        />
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="mt-2 flex items-center gap-2 rounded-control border border-line-strong bg-surface-subtle p-2.5">
+                <ToggleControl
+                  ariaDescribedBy={modesHelpId}
+                  ariaLabel={`Mismo precio para todas las modalidades de ${label}`}
+                  checked={pricing.samePriceForAll}
+                  className="min-w-0 flex-1"
+                  id={`${pricing.id}-same-price`}
+                  label="Mismo precio para todas las modalidades"
+                  onChange={() => {
+                    const samePriceForAll = !pricing.samePriceForAll
+                    const samePriceAmount = samePriceForAll
+                      ? getSharedPricingAmount(pricing)
+                      : pricing.samePriceAmount
+
+                    onChange({
+                      amounts: samePriceForAll
+                        ? withSharedPricingAmount(pricing, samePriceAmount)
+                        : pricing.amounts,
+                      samePriceAmount,
+                      samePriceForAll,
+                    })
                   }}
                 />
-                <label className="w-28 shrink-0 sm:w-32" htmlFor={amountId}>
-                  <span className="sr-only">Valor de {option.label} para {label}</span>
+                <label className="w-28 shrink-0 sm:w-32" htmlFor={`${pricing.id}-same-price-amount`}>
+                  <span className="sr-only">Valor común para {label}</span>
                   <AppInput
-                    aria-label={`Valor de ${option.label} para ${label}`}
+                    aria-label={`Valor común para ${label}`}
                     autoComplete="off"
-                    className="h-10 min-h-0 px-2.5 py-2 text-sm disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-ink-muted disabled:hover:border-line-strong"
-                    disabled={!isSelected || pricing.samePriceForAll}
-                    id={amountId}
+                    className="h-10 min-h-0 px-2.5 py-2 text-sm disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-muted disabled:hover:border-line-strong"
+                    disabled={!pricing.samePriceForAll}
+                    id={`${pricing.id}-same-price-amount`}
                     inputMode="numeric"
                     onChange={(event) => {
-                      const amount = parseChileanPesos(event.currentTarget.value)
-                      const amounts = pricing.samePriceForAll
-                        ? withSharedPricingAmount(pricing, amount)
-                        : { ...pricing.amounts, [option.value]: amount }
+                      const samePriceAmount = parseChileanPesos(event.currentTarget.value)
 
-                      onChange({ amounts })
+                      onChange({
+                        amounts: withSharedPricingAmount(pricing, samePriceAmount),
+                        samePriceAmount,
+                      })
                     }}
-                    placeholder="Valor"
+                    placeholder="Valor común"
                     type="text"
                     value={
-                      isSelected ? formatChileanPesos(pricing.amounts[option.value] ?? 0) : ''
+                      pricing.samePriceForAll ? formatChileanPesos(pricing.samePriceAmount) : ''
                     }
                   />
                 </label>
               </div>
-            )
-          })}
+            </fieldset>
+          </div>
         </div>
-        <div className="mt-2 flex items-center gap-2 rounded-control border border-line-strong bg-surface-subtle p-2.5">
-          <ToggleControl
-            ariaDescribedBy={modesHelpId}
-            ariaLabel={`Mismo precio para todas las modalidades de ${label}`}
-            checked={pricing.samePriceForAll}
-            className="min-w-0 flex-1"
-            id={`${pricing.id}-same-price`}
-            label="Mismo precio para todas las modalidades"
-            onChange={() => {
-              const samePriceForAll = !pricing.samePriceForAll
-              const samePriceAmount = samePriceForAll
-                ? getSharedPricingAmount(pricing)
-                : pricing.samePriceAmount
-
-              onChange({
-                amounts: samePriceForAll
-                  ? withSharedPricingAmount(pricing, samePriceAmount)
-                  : pricing.amounts,
-                samePriceAmount,
-                samePriceForAll,
-              })
-            }}
-          />
-          <label className="w-28 shrink-0 sm:w-32" htmlFor={`${pricing.id}-same-price-amount`}>
-            <span className="sr-only">Valor común para {label}</span>
-            <AppInput
-              aria-label={`Valor común para ${label}`}
-              autoComplete="off"
-              className="h-10 min-h-0 px-2.5 py-2 text-sm disabled:cursor-not-allowed disabled:bg-canvas disabled:text-ink-muted disabled:hover:border-line-strong"
-              disabled={!pricing.samePriceForAll}
-              id={`${pricing.id}-same-price-amount`}
-              inputMode="numeric"
-              onChange={(event) => {
-                const samePriceAmount = parseChileanPesos(event.currentTarget.value)
-
-                onChange({
-                  amounts: withSharedPricingAmount(pricing, samePriceAmount),
-                  samePriceAmount,
-                })
-              }}
-              placeholder="Valor común"
-              type="text"
-              value={
-                pricing.samePriceForAll ? formatChileanPesos(pricing.samePriceAmount) : ''
-              }
-            />
-          </label>
-        </div>
-      </fieldset>
+      </div>
     </li>
   )
 }
@@ -323,10 +439,15 @@ export function PaymentPage() {
   const setProofDeadlineHours = usePaymentStore((state) => state.setProofDeadlineHours)
   const updateTransferDetails = usePaymentStore((state) => state.updateTransferDetails)
   const resetPaymentSettings = usePaymentStore((state) => state.resetPaymentSettings)
-  const [saveMessage, setSaveMessage] = useState('')
+  const [pricingSaveMessage, setPricingSaveMessage] = useState('')
+  const [paymentSaveMessage, setPaymentSaveMessage] = useState('')
 
   function handlePaymentChange() {
-    setSaveMessage('')
+    setPaymentSaveMessage('')
+  }
+
+  function handlePricingChange() {
+    setPricingSaveMessage('')
   }
 
   function handleTransferChange(
@@ -337,14 +458,20 @@ export function PaymentPage() {
     handlePaymentChange()
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handlePricingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSaveMessage('Configuración de pagos guardada en esta sesión de demo.')
+    setPricingSaveMessage('Tarifas guardadas en esta sesión de demo.')
+  }
+
+  function handlePaymentSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setPaymentSaveMessage('Configuración de pagos guardada en esta sesión de demo.')
   }
 
   function handleReset() {
     resetPaymentSettings()
-    setSaveMessage('Configuración de pagos demo restaurada.')
+    setPricingSaveMessage('Tarifas demo restauradas.')
+    setPaymentSaveMessage('Configuración de pagos demo restaurada.')
   }
 
   return (
@@ -371,7 +498,7 @@ export function PaymentPage() {
         </div>
       </BannerWrapper>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form aria-labelledby="pricing-title" className="space-y-3" onSubmit={handlePricingSubmit}>
         <section aria-labelledby="pricing-title" className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
@@ -404,7 +531,7 @@ export function PaymentPage() {
               <AppButton
                 onClick={() => {
                   addPricingOption()
-                  handlePaymentChange()
+                  handlePricingChange()
                 }}
                 size="sm"
                 type="button"
@@ -423,11 +550,11 @@ export function PaymentPage() {
                     key={pricing.id}
                     onChange={(update) => {
                       updatePricingOption(pricing.id, update)
-                      handlePaymentChange()
+                      handlePricingChange()
                     }}
                     onRemove={() => {
                       removePricingOption(pricing.id)
-                      handlePaymentChange()
+                      handlePricingChange()
                     }}
                     pricing={pricing}
                   />
@@ -438,9 +565,25 @@ export function PaymentPage() {
                 Todavía no tienes tarifas. Añade la primera para empezar.
               </p>
             )}
+
+            <div className="mt-4 flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p
+                aria-live="polite"
+                className="max-w-xl text-sm leading-relaxed text-ink-muted"
+                role="status"
+              >
+                {pricingSaveMessage || 'Las tarifas se mantienen en esta sesión de demo.'}
+              </p>
+              <AppButton type="submit" variant="accent">
+                <Icon name="check" size={17} />
+                Guardar tarifas
+              </AppButton>
+            </div>
           </div>
         </section>
+      </form>
 
+      <form aria-labelledby="payment-method-title" className="space-y-6" onSubmit={handlePaymentSubmit}>
         <section aria-labelledby="payment-method-title" className="space-y-3">
           <div className="px-1">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink-muted">
@@ -548,8 +691,12 @@ export function PaymentPage() {
         </section>
 
         <div className="flex flex-col gap-3 rounded-card border-2 border-line bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <p className="max-w-xl text-sm leading-relaxed text-ink-muted" role="status">
-            {saveMessage || 'Los cambios se mantienen en esta sesión de demo.'}
+          <p
+            aria-live="polite"
+            className="max-w-xl text-sm leading-relaxed text-ink-muted"
+            role="status"
+          >
+            {paymentSaveMessage || 'Los cambios se mantienen en esta sesión de demo.'}
           </p>
           <div className="flex flex-col-reverse gap-2 sm:flex-row">
             <AppButton onClick={handleReset} type="button" variant="outline">
