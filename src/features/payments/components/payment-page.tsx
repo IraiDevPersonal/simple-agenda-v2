@@ -690,7 +690,7 @@ export function PaymentPage() {
           </div>
         </section>
 
-        <div className="flex flex-col gap-3 rounded-card border-2 border-line bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="flex flex-col gap-4 rounded-card border-2 border-line bg-surface p-4 shadow-card sm:p-5 lg:flex-row lg:items-center lg:justify-between">
           <p
             aria-live="polite"
             className="max-w-xl text-sm leading-relaxed text-ink-muted"
@@ -698,11 +698,16 @@ export function PaymentPage() {
           >
             {paymentSaveMessage || 'Los cambios se mantienen en esta sesión de demo.'}
           </p>
-          <div className="flex flex-col-reverse gap-2 sm:flex-row">
-            <AppButton onClick={handleReset} type="button" variant="outline">
+          <div className="grid w-full gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:shrink-0">
+            <AppButton
+              className="w-full whitespace-nowrap lg:min-w-40"
+              onClick={handleReset}
+              type="button"
+              variant="outline"
+            >
               Restaurar demo
             </AppButton>
-            <AppButton type="submit" variant="accent">
+            <AppButton className="w-full whitespace-nowrap lg:min-w-40" type="submit" variant="accent">
               <Icon name="check" size={17} />
               Guardar pagos
             </AppButton>

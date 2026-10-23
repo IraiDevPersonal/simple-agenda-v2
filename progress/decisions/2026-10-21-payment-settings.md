@@ -50,3 +50,8 @@ el resto de la demo, hasta aprobar la fase visual y conectar persistencia.
 La configuración se separa en dos formularios independientes: tarifas y
 confirmación de pago. Cada uno tiene su propio guardado y mensaje de estado; el
 botón de restauración sigue actuando como reinicio global de la demo.
+
+El pie de acciones de confirmación mantiene el mensaje separado de los
+botones hasta desktop para evitar que se compriman en anchos intermedios. Las
+acciones ocupan el ancho disponible en mobile y tablet, conservan sus textos
+en una sola línea y pasan a una fila compacta desde `lg`.
