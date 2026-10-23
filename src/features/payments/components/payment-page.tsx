@@ -698,16 +698,16 @@ export function PaymentPage() {
           >
             {paymentSaveMessage || 'Los cambios se mantienen en esta sesión de demo.'}
           </p>
-          <div className="grid w-full gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:shrink-0">
+          <div className="flex w-fit max-w-full flex-wrap justify-end gap-2">
             <AppButton
-              className="w-full whitespace-nowrap lg:min-w-40"
+              className="shrink-0 whitespace-nowrap"
               onClick={handleReset}
               type="button"
               variant="outline"
             >
               Restaurar demo
             </AppButton>
-            <AppButton className="w-full whitespace-nowrap lg:min-w-40" type="submit" variant="accent">
+            <AppButton className="shrink-0 whitespace-nowrap" type="submit" variant="accent">
               <Icon name="check" size={17} />
               Guardar pagos
             </AppButton>
