@@ -22,7 +22,7 @@ export function AppButton({
       data-size={size}
       data-variant={variant}
       className={cn(
-        'inline-flex min-h-11 items-center justify-center gap-2 rounded-control border-2 px-4 text-sm font-bold tracking-[-0.01em] transition duration-200 ease-out hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-45',
+        'inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-control border-2 px-4 text-sm font-bold tracking-[-0.01em] transition duration-200 ease-out hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-45',
         'focus-visible:ring-4 focus-visible:ring-focus/20 focus-visible:outline-none',
         size === 'icon' && 'size-11 p-0',
         size === 'sm' && 'min-h-10 px-3 text-xs',
