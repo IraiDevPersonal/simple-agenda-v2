@@ -426,15 +426,20 @@ export function ProfilePage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-card border-2 border-line bg-surface p-4 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="flex flex-col gap-4 rounded-card border-2 border-line bg-surface p-4 shadow-card sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <p className="max-w-xl text-sm leading-relaxed text-ink-muted" role="status">
               {saveMessage || 'Los cambios se mantienen en esta sesión de demo.'}
             </p>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row">
-              <AppButton onClick={handleReset} type="button" variant="outline">
+            <div className="flex w-fit max-w-full flex-wrap justify-end gap-2 self-end lg:self-auto">
+              <AppButton
+                className="shrink-0 whitespace-nowrap"
+                onClick={handleReset}
+                type="button"
+                variant="outline"
+              >
                 Restaurar demo
               </AppButton>
-              <AppButton type="submit" variant="accent">
+              <AppButton className="shrink-0 whitespace-nowrap" type="submit" variant="accent">
                 <Icon name="check" size={17} />
                 Guardar perfil
               </AppButton>

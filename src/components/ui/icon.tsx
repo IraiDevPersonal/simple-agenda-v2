@@ -14,6 +14,7 @@ export type IconName =
   | 'plus'
   | 'spark'
   | 'trash'
+  | 'wallet'
   | 'x'
 
 type IconProps = SVGProps<SVGSVGElement> & {
@@ -78,6 +79,13 @@ export function Icon({ name, size = 18, ...props }: IconProps) {
       {name === 'trash' ? (
         <>
           <path d="M4.5 7.5h15M9 7.5V5.25h6V7.5M7 7.5l.65 12h8.7L17 7.5M10 11v5M14 11v5" />
+        </>
+      ) : null}
+      {name === 'wallet' ? (
+        <>
+          <path d="M4.5 6.5h13A2.5 2.5 0 0 1 20 9v9.5A2.5 2.5 0 0 1 17.5 21h-13A2.5 2.5 0 0 1 2 18.5v-10A2 2 0 0 1 4 6.5Z" />
+          <path d="M2 9h15.5A2.5 2.5 0 0 1 20 11.5v2H15a2.5 2.5 0 0 1 0-5h5" />
+          <circle cx="15" cy="11" r="0.75" fill="currentColor" stroke="none" />
         </>
       ) : null}
       {name === 'x' ? <path d="m6 6 12 12M18 6 6 18" /> : null}

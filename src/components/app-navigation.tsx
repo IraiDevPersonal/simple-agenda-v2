@@ -5,6 +5,7 @@ import { Icon } from '@/components/ui/icon'
 const navigationItems = [
   { label: 'Perfil', to: '/perfil' as const, icon: 'user' as const },
   { label: 'Horarios', to: '/horarios' as const, icon: 'gear' as const },
+  { label: 'Pagos', to: '/pagos' as const, icon: 'wallet' as const },
   { label: 'Agenda', to: '/agenda' as const, icon: 'calendar' as const },
 ]
 
@@ -12,7 +13,7 @@ export function AppNavigation() {
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed inset-x-3 bottom-3 z-30 mx-auto grid max-w-md grid-cols-3 gap-1.5 rounded-card border border-line bg-surface/95 p-1.5 shadow-navigation-float backdrop-blur-md"
+      className="fixed inset-x-3 bottom-3 z-30 mx-auto grid max-w-md grid-cols-4 gap-1.5 rounded-card border border-line bg-surface/95 p-1.5 shadow-navigation-float backdrop-blur-md"
     >
       {navigationItems.map((item) => (
         <Link

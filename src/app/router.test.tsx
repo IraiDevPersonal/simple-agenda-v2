@@ -67,6 +67,24 @@ describe('navegación principal', () => {
     })
   })
 
+  it('permite navegar desde agenda a la configuración de pagos', async () => {
+    const user = userEvent.setup()
+    const router = createRouter({
+      history: createMemoryHistory({
+        initialEntries: ['/agenda?date=2026-08-04'],
+      }),
+      routeTree,
+    })
+
+    render(<RouterProvider router={router} />)
+    expect(await screen.findByText('Tus bloques del día')).toBeInTheDocument()
+
+    await user.click(screen.getAllByRole('link', { name: 'Pagos' })[0])
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Tus precios' })).toBeInTheDocument()
+    })
+  })
+
   it('permite navegar entre meses conservando el día seleccionado', async () => {
     const user = userEvent.setup()
     const router = createRouter({

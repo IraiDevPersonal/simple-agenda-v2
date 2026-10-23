@@ -15,6 +15,11 @@ La profesión se elige desde una lista de opciones frecuentes. La opción
 `Otra` muestra un campo adicional obligatorio y guarda el texto personalizado
 en el mismo campo `profession`, evitando duplicar el modelo de datos.
 
+El pie de acciones replica el patrón responsive común de la aplicación: el
+mensaje permanece separado, los botones conservan su ancho natural y sus
+textos no se parten. El grupo se alinea al borde derecho tanto en una fila
+como cuando el layout se apila.
+
 ## Próximos datos posibles
 
 No se agregan más campos todavía. Cuando exista la configuración del negocio,
