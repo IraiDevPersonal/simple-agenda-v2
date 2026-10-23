@@ -698,7 +698,7 @@ export function PaymentPage() {
           >
             {paymentSaveMessage || 'Los cambios se mantienen en esta sesión de demo.'}
           </p>
-          <div className="flex w-fit max-w-full flex-wrap justify-end gap-2">
+          <div className="flex w-fit max-w-full flex-wrap justify-end gap-2 self-end lg:self-auto">
             <AppButton
               className="shrink-0 whitespace-nowrap"
               onClick={handleReset}

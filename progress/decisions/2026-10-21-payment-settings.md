@@ -56,3 +56,9 @@ botones hasta desktop para evitar que se compriman en anchos intermedios. El
 grupo conserva el ancho natural de cada acción, evita saltos de línea dentro
 de sus textos y solo permite que los botones se acomoden entre sí cuando el
 viewport es demasiado estrecho.
+
+Los grupos de acciones equivalentes deben conservar una alineación consistente
+con el borde derecho de su sección, incluso cuando el layout pasa a una sola
+columna. Los cambios de breakpoint no deben dejar acciones secundarias o
+principales alineadas al inicio por efecto del comportamiento por defecto de
+Flexbox.
