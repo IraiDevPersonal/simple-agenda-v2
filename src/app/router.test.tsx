@@ -23,7 +23,7 @@ describe('navegación principal', () => {
 
     render(<RouterProvider router={router} />)
 
-    expect(await screen.findByRole('heading', { name: 'Tus bloques del día' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Mi agenda' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /mié 21/i })).toHaveAttribute(
       'aria-current',
       'date',
@@ -41,7 +41,7 @@ describe('navegación principal', () => {
     })
 
     render(<RouterProvider router={router} />)
-    expect(await screen.findByText('Tus bloques del día')).toBeInTheDocument()
+    expect(await screen.findByText('Mi agenda')).toBeInTheDocument()
 
     await user.click(screen.getAllByRole('link', { name: 'Horarios' })[0])
     await waitFor(() => {
@@ -59,7 +59,7 @@ describe('navegación principal', () => {
     })
 
     render(<RouterProvider router={router} />)
-    expect(await screen.findByText('Tus bloques del día')).toBeInTheDocument()
+    expect(await screen.findByText('Mi agenda')).toBeInTheDocument()
 
     await user.click(screen.getAllByRole('link', { name: 'Perfil' })[0])
     await waitFor(() => {
@@ -77,7 +77,7 @@ describe('navegación principal', () => {
     })
 
     render(<RouterProvider router={router} />)
-    expect(await screen.findByText('Tus bloques del día')).toBeInTheDocument()
+    expect(await screen.findByText('Mi agenda')).toBeInTheDocument()
 
     await user.click(screen.getAllByRole('link', { name: 'Pagos' })[0])
     await waitFor(() => {

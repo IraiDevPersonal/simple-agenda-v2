@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="960" viewBox="0 0 720 960" role="img" aria-labelledby="title description">
+  <title id="title">Comprobante de transferencia demo</title>
+  <desc id="description">Comprobante de transferencia de demo para revisar una reserva pendiente.</desc>
+  <rect width="720" height="960" fill="#f7f7f2"/>
+  <rect x="48" y="48" width="624" height="864" rx="28" fill="#ffffff" stroke="#d7d9d1" stroke-width="4"/>
+  <rect x="48" y="48" width="624" height="156" rx="28" fill="#c6f75a"/>
+  <path d="M48 176h624" stroke="#1b1d1b" stroke-width="4"/>
+  <text x="88" y="112" fill="#1b1d1b" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="3">AGENDA</text>
+  <text x="88" y="154" fill="#1b1d1b" font-family="Arial, sans-serif" font-size="18" letter-spacing="2">COMPROBANTE DE TRANSFERENCIA</text>
+  <text x="88" y="276" fill="#6d736b" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">ESTADO</text>
+  <text x="88" y="322" fill="#247a3b" font-family="Arial, sans-serif" font-size="30" font-weight="700">Transferencia realizada</text>
+  <circle cx="595" cy="310" r="27" fill="#c6f75a"/>
+  <path d="m582 310 9 9 17-20" fill="none" stroke="#1b1d1b" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+  <path d="M88 384h544" stroke="#d7d9d1" stroke-width="2"/>
+  <text x="88" y="444" fill="#6d736b" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">TITULAR</text>
+  <text x="88" y="486" fill="#1b1d1b" font-family="Arial, sans-serif" font-size="26" font-weight="700">Diego Morales</text>
+  <text x="88" y="558" fill="#6d736b" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">BANCO</text>
+  <text x="88" y="600" fill="#1b1d1b" font-family="Arial, sans-serif" font-size="26" font-weight="700">Banco de Chile</text>
+  <text x="88" y="672" fill="#6d736b" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2">MONTO</text>
+  <text x="88" y="718" fill="#1b1d1b" font-family="Arial, sans-serif" font-size="38" font-weight="700">$30.000</text>
+  <text x="88" y="824" fill="#6d736b" font-family="Arial, sans-serif" font-size="16">Documento de demostración · Simple Agenda</text>
+</svg>

@@ -44,7 +44,7 @@ const transferFieldConfig = [
     label: 'RUT del titular',
     type: 'text',
     autoComplete: 'off',
-    placeholder: '12.345.678-9',
+    placeholder: '12.345.678-5',
   },
   {
     key: 'email',

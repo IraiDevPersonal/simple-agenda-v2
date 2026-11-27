@@ -149,3 +149,18 @@ export function formatLongDate(dateKey: DateKey): string {
     weekday: 'long',
   }).format(dateFromKey(dateKey))
 }
+
+export function formatWeekDayRangeLabel(dateKey: DateKey): string {
+  const weekDates = getWeekDates(dateKey)
+  const weekStart = dateFromKey(weekDates[0])
+  const weekEnd = dateFromKey(weekDates[weekDates.length - 1])
+  const startDay = new Intl.DateTimeFormat('es-CL', {
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(weekStart)
+  const endDay = new Intl.DateTimeFormat('es-CL', {
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(weekEnd)
+  return `Semana del ${startDay} al ${endDay}`
+}

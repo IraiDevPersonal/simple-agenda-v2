@@ -8,10 +8,14 @@ export type IconName =
   | 'check'
   | 'chevron-down'
   | 'clock'
+  | 'download'
   | 'gear'
+  | 'lock'
+  | 'unlock'
   | 'user'
   | 'minus'
   | 'plus'
+  | 'search'
   | 'spark'
   | 'trash'
   | 'wallet'
@@ -59,10 +63,28 @@ export function Icon({ name, size = 18, ...props }: IconProps) {
           <path d="M12 7v5l3.25 2" />
         </>
       ) : null}
+      {name === 'download' ? (
+        <>
+          <path d="M12 3v11" />
+          <path d="m7.5 10.5 4.5 4.5 4.5-4.5M5 20.5h14" />
+        </>
+      ) : null}
       {name === 'gear' ? (
         <>
           <path d="m12 3 1.2 1.9 2.25.45.55 2.2 1.9 1.2-.75 2.15.75 2.15-1.9 1.2-.55 2.2-2.25.45L12 21l-1.2-1.9-2.25-.45-.55-2.2-1.9-1.2.75-2.15-.75-2.15 1.9-1.2.55-2.2 2.25-.45L12 3Z" />
           <circle cx="12" cy="12" r="2.75" />
+        </>
+      ) : null}
+      {name === 'lock' ? (
+        <>
+          <rect height="10" rx="2" width="14" x="5" y="10" />
+          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+        </>
+      ) : null}
+      {name === 'unlock' ? (
+        <>
+          <rect height="10" rx="2" width="14" x="5" y="10" />
+          <path d="M9 10V7a3 3 0 0 1 5.5-1.65" />
         </>
       ) : null}
       {name === 'user' ? (
@@ -73,6 +95,12 @@ export function Icon({ name, size = 18, ...props }: IconProps) {
       ) : null}
       {name === 'minus' ? <path d="M5 12h14" /> : null}
       {name === 'plus' ? <path d="M12 5v14M5 12h14" /> : null}
+      {name === 'search' ? (
+        <>
+          <circle cx="10.75" cy="10.75" r="6.25" />
+          <path d="m16 16 4.25 4.25" />
+        </>
+      ) : null}
       {name === 'spark' ? (
         <path d="m12 2 1.45 6.55L20 10l-6.55 1.45L12 18l-1.45-6.55L4 10l6.55-1.45L12 2ZM19 16l.55 2.45L22 19l-2.45.55L19 22l-.55-2.45L16 19l2.45-.55L19 16Z" />
       ) : null}

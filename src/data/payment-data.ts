@@ -40,7 +40,7 @@ export const demoPaymentSettings: PaymentSettings = {
     bank: 'Banco de Chile',
     accountType: 'checking',
     accountNumber: '123456789',
-    rut: '12.345.678-9',
+  rut: '12.345.678-5',
     email: 'pagos@ejemplo.cl',
   },
 }

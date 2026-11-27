@@ -16,6 +16,24 @@ export type Weekday =
 
 export type ServiceMode = 'remote' | 'in-person' | 'home-visit'
 
+export type Patient = {
+  id: string
+  rut: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+}
+
+export type PatientDraft = Omit<Patient, 'id'>
+
+export type AppointmentPricing = {
+  id: string
+  name: string
+  serviceMode: ServiceMode
+  amount: number
+}
+
 export type ScheduleSegment = {
   id: string
   weekday: Weekday
@@ -26,16 +44,33 @@ export type ScheduleSegment = {
   serviceMode: ServiceMode
 }
 
-export type SlotStatus = 'available' | 'reserved' | 'blocked'
+export type AppointmentStatus = 'pending' | 'confirmed' | 'blocked'
+export type SlotStatus = 'available' | AppointmentStatus
+
+export type NewAppointment = {
+  date: DateKey
+  startTime: string
+  status: Exclude<AppointmentStatus, 'blocked'>
+  clientName: string
+  serviceName: string
+  patient?: Patient
+  pricing?: AppointmentPricing
+  proofDeadlineHours?: number
+}
 
 export type Appointment = {
   id: string
   date: DateKey
   startTime: string
-  status: Exclude<SlotStatus, 'available'>
+  status: AppointmentStatus
   clientName?: string
   serviceName?: string
   label?: string
+  patient?: Patient
+  pricing?: AppointmentPricing
+  proofDeadlineHours?: number
+  proofFileName?: string
+  proofFileUrl?: string
 }
 
 export type AgendaSlot = {
@@ -43,6 +78,7 @@ export type AgendaSlot = {
   date: DateKey
   startTime: string
   endTime: string
+  serviceMode: ServiceMode
   status: SlotStatus
   appointmentId?: string
   appointment?: Appointment
