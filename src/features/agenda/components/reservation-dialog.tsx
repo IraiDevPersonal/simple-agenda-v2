@@ -7,6 +7,9 @@ import { AppInput } from '@/components/ui/app-input'
 import { AppSelect } from '@/components/ui/app-select'
 import { Icon } from '@/components/ui/icon'
 import { IconButton } from '@/components/ui/icon-button'
+import {
+  toAppointmentPricing,
+} from '@/features/agenda/lib/pricing-utils'
 import { formatLongDate } from '@/lib/date-utils'
 import { formatChileanRut, findPatientByRut, isValidChileanRut } from '@/lib/patient-utils'
 import { formatChileanPesos } from '@/lib/payment-utils'
@@ -57,32 +60,6 @@ function getFocusableElements(container: HTMLElement) {
       'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
     ),
   )
-}
-
-function getPricingAmount(pricing: PaymentPricing, serviceMode: AgendaSlot['serviceMode']) {
-  if (!pricing.serviceModes.includes(serviceMode)) {
-    return null
-  }
-
-  return pricing.samePriceForAll
-    ? pricing.samePriceAmount
-    : pricing.amounts[serviceMode] ?? 0
-}
-
-function toAppointmentPricing(
-  pricing: PaymentPricing,
-  serviceMode: AgendaSlot['serviceMode'],
-): AppointmentPricing | null {
-  const amount = getPricingAmount(pricing, serviceMode)
-
-  return amount === null
-    ? null
-    : {
-        amount,
-        id: pricing.id,
-        name: pricing.name,
-        serviceMode,
-      }
 }
 
 function getPatientDraft(patient: Patient): PatientDraft {

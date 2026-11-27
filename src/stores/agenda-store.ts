@@ -17,6 +17,7 @@ import {
   type NewAppointment,
   type Patient,
   type PatientDraft,
+  type RescheduleTarget,
   type ScheduleSegment,
   type Weekday,
 } from '@/types/agenda'
@@ -47,7 +48,7 @@ type AgendaStore = {
   confirmAppointment: (appointmentId: string) => void
   rescheduleAppointment: (
     appointmentId: string,
-    target: Pick<AgendaSlot, 'date' | 'startTime'>,
+    target: RescheduleTarget,
   ) => boolean
   cancelAppointment: (appointmentId: string) => void
   attachProof: (appointmentId: string, fileName: string, fileUrl?: string) => void
@@ -245,18 +246,42 @@ export const useAgendaStore = create<AgendaStore>((set) => ({
       if (
         !appointment ||
         appointment.status !== 'confirmed' ||
+        !Number.isFinite(target.pricing.amount) ||
+        target.pricing.amount <= 0 ||
         state.blockedDates.includes(target.date) ||
         targetIsTaken
       ) {
         return state
       }
 
+      const currentAmount = appointment.pricing?.amount ?? target.pricing.amount
+      const shouldRequestPayment =
+        !target.keepCurrentPrice &&
+        target.pricing.amount > currentAmount &&
+        target.proofDeadlineHours > 0
+      const nextPricing = target.keepCurrentPrice
+        ? { ...target.pricing, amount: currentAmount }
+        : target.pricing
+
       didReschedule = true
 
       return {
         appointments: state.appointments.map((item) =>
           item.id === appointmentId
-            ? { ...item, date: target.date, startTime: target.startTime }
+            ? {
+                ...item,
+                date: target.date,
+                pricing: nextPricing,
+                startTime: target.startTime,
+                status: shouldRequestPayment ? 'pending' : 'confirmed',
+                ...(shouldRequestPayment
+                  ? {
+                      proofDeadlineHours: target.proofDeadlineHours,
+                      proofFileName: undefined,
+                      proofFileUrl: undefined,
+                    }
+                  : {}),
+              }
             : item,
         ),
       }

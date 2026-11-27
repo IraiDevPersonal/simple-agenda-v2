@@ -83,3 +83,9 @@ export type AgendaSlot = {
   appointmentId?: string
   appointment?: Appointment
 }
+
+export type RescheduleTarget = Pick<AgendaSlot, 'date' | 'startTime'> & {
+  keepCurrentPrice: boolean
+  pricing: AppointmentPricing
+  proofDeadlineHours: number
+}

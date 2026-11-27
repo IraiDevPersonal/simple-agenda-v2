@@ -1,34 +1,49 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { AppButton } from '@/components/ui/app-button'
+import { AppSelect } from '@/components/ui/app-select'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Icon } from '@/components/ui/icon'
 import { IconButton } from '@/components/ui/icon-button'
 import { generateAgendaSlots } from '@/features/agenda/lib/generate-agenda-slots'
+import {
+  findPricingForAppointment,
+  getConfiguredServiceModes,
+  toAppointmentPricing,
+} from '@/features/agenda/lib/pricing-utils'
 import {
   formatLongDate,
   isDateTimeInPast,
   isValidDateKey,
   todayDateKey,
 } from '@/lib/date-utils'
-import { getServiceModeLabel } from '@/lib/service-mode-utils'
+import { formatChileanPesos } from '@/lib/payment-utils'
+import {
+  getServiceModeLabel,
+  SERVICE_MODE_OPTIONS,
+} from '@/lib/service-mode-utils'
 import type {
-  AgendaSlot,
   Appointment,
   AppointmentBufferMinutes,
   DateKey,
+  RescheduleTarget,
   ScheduleSegment,
+  ServiceMode,
 } from '@/types/agenda'
+import type { PaymentPricing } from '@/types/payments'
+
+type ServiceModeFilter = ServiceMode | 'all'
 
 type RescheduleDialogProps = {
   appointment: Appointment
   appointments: Appointment[]
   appointmentBufferMinutes: AppointmentBufferMinutes
   blockedDates: DateKey[]
+  pricingOptions: PaymentPricing[]
+  proofDeadlineHours: number
   scheduleSegments: ScheduleSegment[]
-  serviceMode: AgendaSlot['serviceMode']
   onClose: () => void
-  onSubmit: (slot: AgendaSlot) => boolean
+  onSubmit: (target: RescheduleTarget) => boolean
 }
 
 function getFocusableElements(container: HTMLElement) {
@@ -52,8 +67,9 @@ export function RescheduleDialog({
   appointments,
   appointmentBufferMinutes,
   blockedDates,
+  pricingOptions,
+  proofDeadlineHours,
   scheduleSegments,
-  serviceMode,
   onClose,
   onSubmit,
 }: RescheduleDialogProps) {
@@ -61,8 +77,23 @@ export function RescheduleDialog({
   const todayDate = todayDateKey()
   const [selectedDate, setSelectedDate] = useState<DateKey>(() => todayDate)
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
+  const [serviceModeFilter, setServiceModeFilter] = useState<ServiceModeFilter>('all')
+  const [keepCurrentPrice, setKeepCurrentPrice] = useState(false)
   const [error, setError] = useState('')
   const [now, setNow] = useState(() => new Date())
+
+  const currentPricing = useMemo(
+    () => findPricingForAppointment(appointment, pricingOptions),
+    [appointment, pricingOptions],
+  )
+  const configuredServiceModes = useMemo(
+    () => getConfiguredServiceModes(currentPricing),
+    [currentPricing],
+  )
+  const otherAppointments = useMemo(
+    () => appointments.filter((item) => item.id !== appointment.id),
+    [appointment.id, appointments],
+  )
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -72,26 +103,56 @@ export function RescheduleDialog({
     return () => window.clearInterval(intervalId)
   }, [])
 
-  const availableSlots = useMemo(() => {
-    if (blockedDates.includes(selectedDate)) {
-      return []
-    }
+  const getAvailableSlots = useCallback(
+    (date: DateKey, modeFilter: ServiceModeFilter) => {
+      if (blockedDates.includes(date) || configuredServiceModes.length === 0) {
+        return []
+      }
 
-    return generateAgendaSlots({
-      appointments: appointments.filter((item) => item.id !== appointment.id),
-      bufferMinutes: appointmentBufferMinutes,
-      date: selectedDate,
+      return generateAgendaSlots({
+        appointments: otherAppointments,
+        bufferMinutes: appointmentBufferMinutes,
+        date,
+        scheduleSegments,
+      }).filter(
+        (slot) =>
+          slot.status === 'available' &&
+          !isDateTimeInPast(slot.date, slot.startTime, now) &&
+          configuredServiceModes.includes(slot.serviceMode) &&
+          (modeFilter === 'all' || slot.serviceMode === modeFilter) &&
+          !(slot.date === appointment.date && slot.startTime === appointment.startTime),
+      )
+    },
+    [
+      appointment.date,
+      appointment.startTime,
+      appointmentBufferMinutes,
+      blockedDates,
+      configuredServiceModes,
+      now,
+      otherAppointments,
       scheduleSegments,
-    }).filter(
-      (slot) =>
-        slot.status === 'available' &&
-        !isDateTimeInPast(slot.date, slot.startTime, now) &&
-        slot.serviceMode === serviceMode &&
-        !(slot.date === appointment.date && slot.startTime === appointment.startTime),
-    )
-  }, [appointment, appointments, appointmentBufferMinutes, blockedDates, now, scheduleSegments, selectedDate, serviceMode])
+    ],
+  )
 
+  const availableSlots = useMemo(
+    () => getAvailableSlots(selectedDate, serviceModeFilter),
+    [getAvailableSlots, selectedDate, serviceModeFilter],
+  )
   const selectedSlot = availableSlots.find((slot) => slot.id === selectedSlotId)
+  const selectedSlotPricing = selectedSlot && currentPricing
+    ? toAppointmentPricing(currentPricing, selectedSlot.serviceMode)
+    : null
+  const currentAmount = appointment.pricing?.amount ?? selectedSlotPricing?.amount ?? 0
+  const priceDifference = selectedSlotPricing
+    ? selectedSlotPricing.amount - currentAmount
+    : null
+  const finalPrice = keepCurrentPrice
+    ? currentAmount
+    : selectedSlotPricing?.amount ?? currentAmount
+  const modeOptions = SERVICE_MODE_OPTIONS.filter(({ value }) =>
+    configuredServiceModes.includes(value),
+  )
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -152,16 +213,7 @@ export function RescheduleDialog({
   }, [])
 
   function hasAgendaSlots(date: DateKey) {
-    if (blockedDates.includes(date)) {
-      return false
-    }
-
-    return generateAgendaSlots({
-      appointments: appointments.filter((item) => item.id !== appointment.id),
-      bufferMinutes: appointmentBufferMinutes,
-      date,
-      scheduleSegments,
-    }).length > 0
+    return getAvailableSlots(date, serviceModeFilter).length > 0
   }
 
   function handleDateChange(value: string) {
@@ -175,13 +227,27 @@ export function RescheduleDialog({
     setError('')
   }
 
+  function handleServiceModeChange(value: string) {
+    const nextFilter = value as ServiceModeFilter
+
+    setServiceModeFilter(nextFilter)
+    setSelectedSlotId(null)
+    setError('')
+  }
+
   function handleSubmit() {
-    if (!selectedSlot) {
-      setError('Selecciona un horario disponible para continuar.')
+    if (!selectedSlot || !selectedSlotPricing) {
+      setError('Selecciona un horario con una tarifa configurada para continuar.')
       return
     }
 
-    if (!onSubmit(selectedSlot)) {
+    if (!onSubmit({
+      date: selectedSlot.date,
+      keepCurrentPrice,
+      pricing: selectedSlotPricing,
+      proofDeadlineHours,
+      startTime: selectedSlot.startTime,
+    })) {
       setError('Ese horario ya no está disponible. Selecciona otro bloque.')
       return
     }
@@ -190,6 +256,11 @@ export function RescheduleDialog({
   }
 
   const appointmentName = getAppointmentName(appointment)
+  const selectedModeLabel = selectedSlot
+    ? getServiceModeLabel(selectedSlot.serviceMode)
+    : serviceModeFilter === 'all'
+      ? 'Todas'
+      : getServiceModeLabel(serviceModeFilter)
 
   return (
     <div
@@ -204,7 +275,7 @@ export function RescheduleDialog({
         aria-describedby="reschedule-dialog-description"
         aria-labelledby="reschedule-dialog-title"
         aria-modal="true"
-        className="max-h-[min(42rem,calc(100svh-1.5rem))] w-full max-w-none overflow-y-auto rounded-card border-2 border-line bg-surface p-5 shadow-float sm:max-w-lg sm:p-6"
+        className="max-h-[min(46rem,calc(100svh-1.5rem))] w-full max-w-none overflow-y-auto rounded-card border-2 border-line bg-surface p-5 shadow-float sm:max-w-lg sm:p-6"
         data-slot="reschedule-dialog"
         ref={dialogRef}
         role="dialog"
@@ -234,24 +305,48 @@ export function RescheduleDialog({
           Elige una nueva fecha y un horario disponible. La cita actual se conservará hasta confirmar el cambio.
         </p>
 
-        <div className="mt-5 grid gap-2">
-          <label
-            className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted"
-            htmlFor="reschedule-date"
-          >
-            Nueva fecha
-          </label>
-          <DatePicker
-            id="reschedule-date"
-            isDateDisabled={(date) => date < todayDate || !hasAgendaSlots(date)}
-            minDate={todayDate}
-            onSelect={handleDateChange}
-            selectedDate={selectedDate}
-          />
-          <p className="text-xs text-ink-muted">
-            {formatLongDate(selectedDate)} · {getServiceModeLabel(serviceMode)}
-          </p>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <label
+              className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted"
+              htmlFor="reschedule-date"
+            >
+              Nueva fecha
+            </label>
+            <DatePicker
+              id="reschedule-date"
+              isDateDisabled={(date) => date < todayDate || !hasAgendaSlots(date)}
+              minDate={todayDate}
+              onSelect={handleDateChange}
+              selectedDate={selectedDate}
+            />
+          </div>
+          <div className="grid content-start gap-2">
+            <label
+              className="text-xs font-bold uppercase tracking-[0.09em] text-ink-muted"
+              htmlFor="reschedule-service-mode"
+            >
+              Modalidad
+            </label>
+            <AppSelect
+              data-autofocus="true"
+              id="reschedule-service-mode"
+              onChange={(event) => handleServiceModeChange(event.currentTarget.value)}
+              value={serviceModeFilter}
+            >
+              <option value="all">Todas</option>
+              {modeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </AppSelect>
+          </div>
         </div>
+
+        <p className="mt-2 text-xs text-ink-muted">
+          {formatLongDate(selectedDate)} · {selectedModeLabel}
+        </p>
 
         <section aria-labelledby="reschedule-slots-title" className="mt-5">
           <div className="flex items-baseline justify-between gap-3">
@@ -261,7 +356,7 @@ export function RescheduleDialog({
             >
               Horarios disponibles
             </h3>
-            <span className="text-xs font-bold text-ink-muted">
+            <span aria-live="polite" className="text-xs font-bold text-ink-muted">
               {availableSlots.length} {availableSlots.length === 1 ? 'opción' : 'opciones'}
             </span>
           </div>
@@ -270,6 +365,9 @@ export function RescheduleDialog({
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {availableSlots.map((slot) => {
                 const isSelected = slot.id === selectedSlotId
+                const slotPricing = currentPricing
+                  ? toAppointmentPricing(currentPricing, slot.serviceMode)
+                  : null
 
                 return (
                   <button
@@ -290,8 +388,13 @@ export function RescheduleDialog({
                         Termina a las {slot.endTime}
                       </span>
                     </span>
-                    <span className="shrink-0 text-xs font-bold">
-                      {getServiceModeLabel(slot.serviceMode)}
+                    <span className="shrink-0 text-right text-xs font-bold">
+                      <span className="block">{getServiceModeLabel(slot.serviceMode)}</span>
+                      {slotPricing ? (
+                        <span className="mt-0.5 block opacity-75">
+                          {formatChileanPesos(slotPricing.amount)}
+                        </span>
+                      ) : null}
                     </span>
                   </button>
                 )
@@ -301,10 +404,64 @@ export function RescheduleDialog({
             <p className="mt-3 rounded-control border border-dashed border-line-strong bg-surface-subtle p-4 text-sm leading-relaxed text-ink-muted">
               {blockedDates.includes(selectedDate)
                 ? 'Este día está bloqueado para nuevas reservas.'
-                : 'No hay horarios disponibles para esta modalidad en esta fecha.'}
+                : !currentPricing || modeOptions.length === 0
+                  ? 'La tarifa de esta cita no tiene modalidades con precio configurado.'
+                  : serviceModeFilter === 'all'
+                    ? 'No hay horarios disponibles para esta fecha.'
+                    : `No hay horarios disponibles para ${getServiceModeLabel(serviceModeFilter)} en esta fecha.`}
             </p>
           )}
         </section>
+
+        <div className="mt-5 rounded-control border border-line bg-surface-subtle p-3">
+          <label className="flex cursor-pointer items-start gap-3" htmlFor="reschedule-keep-price">
+            <input
+              checked={keepCurrentPrice}
+              className="mt-0.5 size-4 accent-accent"
+              id="reschedule-keep-price"
+              onChange={(event) => setKeepCurrentPrice(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold text-ink">Mantener precio actual</span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">
+                El profesional absorbe cualquier diferencia y la cita se reagenda directamente.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        {selectedSlotPricing ? (
+          <div className="mt-3 rounded-control border border-line bg-surface p-3 text-sm">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <span className="block text-xs font-bold uppercase tracking-[0.08em] text-ink-muted">
+                  Precio final
+                </span>
+                <strong className="mt-1 block font-display text-xl font-bold tracking-[-0.04em] text-ink">
+                  {formatChileanPesos(finalPrice)}
+                </strong>
+              </div>
+              {keepCurrentPrice && priceDifference !== 0 ? (
+                <div className="text-right">
+                  <span className="block text-xs text-ink-muted">Tarifa modalidad</span>
+                  <span className="text-sm text-ink-muted line-through">
+                    {formatChileanPesos(selectedSlotPricing.amount)}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            {keepCurrentPrice && priceDifference !== 0 ? (
+              <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+                Se conserva el precio actual aunque la tarifa de {getServiceModeLabel(selectedSlotPricing.serviceMode)} sea diferente.
+              </p>
+            ) : priceDifference !== null && priceDifference > 0 && proofDeadlineHours > 0 ? (
+              <p className="mt-2 text-xs leading-relaxed text-warning-ink">
+                La cita quedará pendiente para solicitar {formatChileanPesos(priceDifference)} adicionales.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         {error ? (
           <p className="mt-4 text-sm font-bold text-danger-ink" role="alert">
@@ -316,7 +473,12 @@ export function RescheduleDialog({
           <AppButton onClick={onClose} type="button" variant="outline">
             Cancelar
           </AppButton>
-          <AppButton disabled={!selectedSlot} onClick={handleSubmit} type="button" variant="accent">
+          <AppButton
+            disabled={!selectedSlot || !selectedSlotPricing}
+            onClick={handleSubmit}
+            type="button"
+            variant="accent"
+          >
             Confirmar horario
             <Icon name="check" size={16} />
           </AppButton>

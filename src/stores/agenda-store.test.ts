@@ -79,6 +79,14 @@ describe('useAgendaStore', () => {
     expect(
       useAgendaStore.getState().rescheduleAppointment(appointmentId, {
         date: '2026-11-23',
+        keepCurrentPrice: false,
+        pricing: {
+          amount: 35000,
+          id: 'pricing-particular',
+          name: 'Particular',
+          serviceMode: 'in-person',
+        },
+        proofDeadlineHours: 3,
         startTime: '10:00',
       }),
     ).toBe(true)
@@ -93,9 +101,128 @@ describe('useAgendaStore', () => {
     expect(
       useAgendaStore.getState().rescheduleAppointment(appointmentId, {
         date: '2026-11-20',
+        keepCurrentPrice: false,
+        pricing: {
+          amount: 35000,
+          id: 'pricing-particular',
+          name: 'Particular',
+          serviceMode: 'in-person',
+        },
+        proofDeadlineHours: 3,
         startTime: '10:15',
       }),
     ).toBe(false)
+  })
+
+  it('solicita el pago adicional al cambiar a una modalidad más cara', () => {
+    const appointmentId = 'appointment-today-in-person'
+
+    useAgendaStore.getState().attachProof(appointmentId, 'comprobante-valentina.pdf')
+    expect(
+      useAgendaStore.getState().rescheduleAppointment(appointmentId, {
+        date: '2026-11-27',
+        keepCurrentPrice: false,
+        pricing: {
+          amount: 40000,
+          id: 'pricing-particular',
+          name: 'Particular',
+          serviceMode: 'home-visit',
+        },
+        proofDeadlineHours: 3,
+        startTime: '12:00',
+      }),
+    ).toBe(true)
+
+    expect(useAgendaStore.getState().appointments).toContainEqual(
+      expect.objectContaining({
+        id: appointmentId,
+        proofDeadlineHours: 3,
+        proofFileName: undefined,
+        pricing: expect.objectContaining({ amount: 40000, serviceMode: 'home-visit' }),
+        status: 'pending',
+      }),
+    )
+  })
+
+  it('aplica directamente una tarifa menor al cambiar de modalidad', () => {
+    const appointmentId = 'appointment-today-in-person'
+
+    expect(
+      useAgendaStore.getState().rescheduleAppointment(appointmentId, {
+        date: '2026-11-27',
+        keepCurrentPrice: false,
+        pricing: {
+          amount: 30000,
+          id: 'pricing-particular',
+          name: 'Particular',
+          serviceMode: 'remote',
+        },
+        proofDeadlineHours: 3,
+        startTime: '12:00',
+      }),
+    ).toBe(true)
+
+    expect(useAgendaStore.getState().appointments).toContainEqual(
+      expect.objectContaining({
+        id: appointmentId,
+        pricing: expect.objectContaining({ amount: 30000, serviceMode: 'remote' }),
+        status: 'confirmed',
+      }),
+    )
+  })
+
+  it('mantiene el precio y confirma directamente cuando el profesional lo absorbe', () => {
+    const appointmentId = 'appointment-today-in-person'
+
+    expect(
+      useAgendaStore.getState().rescheduleAppointment(appointmentId, {
+        date: '2026-11-27',
+        keepCurrentPrice: true,
+        pricing: {
+          amount: 30000,
+          id: 'pricing-particular',
+          name: 'Particular',
+          serviceMode: 'remote',
+        },
+        proofDeadlineHours: 3,
+        startTime: '12:00',
+      }),
+    ).toBe(true)
+
+    expect(useAgendaStore.getState().appointments).toContainEqual(
+      expect.objectContaining({
+        id: appointmentId,
+        pricing: expect.objectContaining({ amount: 35000, serviceMode: 'remote' }),
+        status: 'confirmed',
+      }),
+    )
+  })
+
+  it('respeta una configuración sin comprobante al cambiar a una modalidad más cara', () => {
+    const appointmentId = 'appointment-today-in-person'
+
+    expect(
+      useAgendaStore.getState().rescheduleAppointment(appointmentId, {
+        date: '2026-11-27',
+        keepCurrentPrice: false,
+        pricing: {
+          amount: 40000,
+          id: 'pricing-particular',
+          name: 'Particular',
+          serviceMode: 'home-visit',
+        },
+        proofDeadlineHours: 0,
+        startTime: '12:00',
+      }),
+    ).toBe(true)
+
+    expect(useAgendaStore.getState().appointments).toContainEqual(
+      expect.objectContaining({
+        id: appointmentId,
+        pricing: expect.objectContaining({ amount: 40000, serviceMode: 'home-visit' }),
+        status: 'confirmed',
+      }),
+    )
   })
 
   it('agrega, edita y elimina un tramo', () => {

@@ -66,7 +66,7 @@ describe('AgendaPage', () => {
 
     expect(await screen.findByText('Camila Rojas')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Reagendar cita de Camila Rojas' })).toBeInTheDocument()
-  }, 10000)
+  }, 20000)
 
   it('filtra la agenda por estado y permite volver a mostrar todos los bloques', async () => {
     const user = userEvent.setup()

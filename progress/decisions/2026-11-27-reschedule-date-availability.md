@@ -21,13 +21,13 @@ actual según `America/Santiago`.
 
 Los horarios se filtran por fecha y hora actual antes de mostrarse; el diálogo
 actualiza esa referencia cada minuto para no conservar horarios que se vuelvan
-pasados mientras permanece abierto. Se conserva
-la compatibilidad de modalidad existente: el reagendamiento no cambia la
-modalidad ni el precio de una cita; por eso sólo ofrece bloques libres de la
-misma modalidad.
+pasados mientras permanece abierto. La disponibilidad se cruza con las
+modalidades que tienen un importe configurado en la tarifa actual de la cita.
+El selector parte en "Todas las modalidades" y permite limitar los bloques a
+una modalidad concreta.
 
 ## Alcance
 
-El cambio está limitado al diálogo de reagendamiento y a utilidades puras de
-fecha. No modifica la agenda principal ni convierte el reagendamiento en una
-edición de modalidad o precio.
+El cambio está limitado al diálogo de reagendamiento, al selector reutilizable
+de fecha y a utilidades puras. La actualización de modalidad, tarifa y estado
+se documenta por separado en la decisión de reagendamiento entre modalidades.

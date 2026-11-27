@@ -26,7 +26,12 @@ import {
 } from '@/lib/date-utils'
 import { useAgendaStore } from '@/stores/agenda-store'
 import { usePaymentStore } from '@/stores/payment-store'
-import type { AgendaSlot, DateKey, SlotStatus } from '@/types/agenda'
+import type {
+  AgendaSlot,
+  DateKey,
+  RescheduleTarget,
+  SlotStatus,
+} from '@/types/agenda'
 
 const statusFilters: Array<{
   pluralLabel: string
@@ -136,23 +141,20 @@ export function AgendaPage() {
     unblockSlot(slot.date, slot.startTime)
   }
 
-  function handleReschedule(slot: AgendaSlot) {
+  function handleReschedule(target: RescheduleTarget) {
     const appointmentId = reschedulingSlot?.appointment?.id
 
     if (!appointmentId) {
       return false
     }
 
-    const didReschedule = rescheduleAppointment(appointmentId, {
-      date: slot.date,
-      startTime: slot.startTime,
-    })
+    const didReschedule = rescheduleAppointment(appointmentId, target)
 
     if (didReschedule) {
       closeReschedule()
 
-      if (slot.date !== selectedDate) {
-        selectDate(slot.date)
+      if (target.date !== selectedDate) {
+        selectDate(target.date)
       }
     }
 
@@ -360,8 +362,9 @@ export function AgendaPage() {
           blockedDates={blockedDates}
           onClose={closeReschedule}
           onSubmit={handleReschedule}
+          pricingOptions={paymentSettings.pricingOptions}
+          proofDeadlineHours={paymentSettings.proofDeadlineHours}
           scheduleSegments={scheduleSegments}
-          serviceMode={reschedulingSlot.serviceMode}
         />
       ) : null}
     </div>

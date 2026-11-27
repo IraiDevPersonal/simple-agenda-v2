@@ -240,7 +240,7 @@ export function DatePicker({
             <button
               aria-current={isSelected ? 'date' : undefined}
               aria-label={formatLongDate(date)}
-              className={`grid size-8 place-items-center rounded-lg border text-xs font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus/20 ${isDisabled ? 'cursor-not-allowed border-transparent bg-surface-subtle text-ink-muted/45 opacity-70' : isSelected ? 'border-transparent bg-accent text-accent-ink font-extrabold' : isOutsideMonth ? 'border-transparent text-ink-muted/70 hover:border-line-strong' : 'border-transparent text-ink hover:border-line-strong'}`}
+              className={`grid size-8 place-items-center rounded-lg border text-xs font-bold transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-focus/20 ${isDisabled ? 'cursor-not-allowed border-transparent bg-surface-subtle text-ink-muted/45 opacity-70' : isSelected ? 'rounded-sm border-transparent bg-accent text-accent-ink font-extrabold shadow-action-accent' : isOutsideMonth ? 'border-transparent text-ink-muted/70 hover:border-line-strong' : 'border-transparent text-ink hover:border-line-strong'}`}
               disabled={isDisabled}
               key={date}
               onClick={() => selectDate(date)}
