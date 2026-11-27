@@ -16,7 +16,8 @@ export function StatusPill({ children, status }: StatusPillProps) {
       className={cn(
         'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-pill px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.08em]',
         status === 'available' && 'bg-success-soft text-success-ink',
-        status === 'reserved' && 'bg-accent-soft text-accent-ink',
+        status === 'pending' && 'bg-warning-soft text-warning-ink',
+        status === 'confirmed' && 'bg-accent-soft text-accent-ink',
         status === 'blocked' && 'bg-danger-soft text-danger-ink',
       )}
     >
@@ -25,7 +26,8 @@ export function StatusPill({ children, status }: StatusPillProps) {
         className={cn(
           'size-1.5 rounded-full',
           status === 'available' && 'bg-success-ink',
-          status === 'reserved' && 'bg-accent-ink',
+          status === 'pending' && 'bg-warning-ink',
+          status === 'confirmed' && 'bg-accent-ink',
           status === 'blocked' && 'bg-danger-ink',
         )}
       />

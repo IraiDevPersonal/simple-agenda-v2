@@ -44,6 +44,7 @@ export function generateAgendaSlots({
           date,
           startTime: block.startTime,
           endTime: block.endTime,
+          serviceMode: appointment?.pricing?.serviceMode ?? segment.serviceMode,
           status: appointment?.status ?? 'available',
           appointmentId: appointment?.id,
           appointment,

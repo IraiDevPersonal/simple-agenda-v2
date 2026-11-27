@@ -25,6 +25,7 @@ describe('generateAgendaSlots', () => {
         date: '2026-08-04',
         endTime: '10:45',
         id: '2026-08-04-10:00',
+        serviceMode: 'in-person',
         startTime: '10:00',
         status: 'available',
       },
@@ -32,6 +33,7 @@ describe('generateAgendaSlots', () => {
         date: '2026-08-04',
         endTime: '11:30',
         id: '2026-08-04-10:45',
+        serviceMode: 'in-person',
         startTime: '10:45',
         status: 'available',
       },
@@ -70,14 +72,51 @@ describe('generateAgendaSlots', () => {
     })
 
     expect(slots.find((slot) => slot.startTime === '09:00')).toMatchObject({
-      status: 'reserved',
+      status: 'confirmed',
       appointmentId: 'appointment-1',
       appointment: { clientName: 'Camila Rojas' },
+    })
+    expect(slots.find((slot) => slot.startTime === '09:45')).toMatchObject({
+      status: 'pending',
+      appointmentId: 'appointment-5',
+      appointment: { clientName: 'Ignacia Soto' },
     })
     expect(slots.find((slot) => slot.startTime === '10:30')).toMatchObject({
       status: 'blocked',
       appointmentId: 'appointment-2',
     })
+  })
+
+  it('usa la modalidad de la tarifa cuando la cita tiene una', () => {
+    const slots = generateAgendaSlots({
+      appointments: [
+        {
+          date: '2026-08-04',
+          id: 'appointment-mode',
+          pricing: {
+            amount: 40000,
+            id: 'pricing-home-visit',
+            name: 'Particular',
+            serviceMode: 'home-visit',
+          },
+          startTime: '10:00',
+          status: 'confirmed',
+        },
+      ],
+      date: '2026-08-04',
+      scheduleSegments: [
+        {
+          blockCount: 1,
+          enabled: true,
+          id: 'segment-tuesday-test',
+          serviceMode: 'remote',
+          startTime: '10:00',
+          weekday: 'tuesday',
+        },
+      ],
+    })
+
+    expect(slots[0]?.serviceMode).toBe('home-visit')
   })
 
   it('omite un bloque retirado sin mover los horarios siguientes', () => {

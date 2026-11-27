@@ -1,6 +1,7 @@
-import type { Appointment, DateKey, ScheduleSegment } from '@/types/agenda'
+import type { Appointment, DateKey, Patient, ScheduleSegment } from '@/types/agenda'
 
 export const DEMO_DATE: DateKey = '2026-08-04'
+export const DEMO_TODAY_DATE: DateKey = '2026-11-20'
 
 export const demoScheduleSegments: ScheduleSegment[] = [
   {
@@ -61,14 +62,36 @@ export const demoScheduleSegments: ScheduleSegment[] = [
   },
 ]
 
+export const demoPatients: Patient[] = [
+  {
+    id: 'patient-1',
+    rut: '12.345.678-5',
+    firstName: 'Camila',
+    lastName: 'Rojas',
+    email: 'camila.rojas@ejemplo.cl',
+    phone: '+56 9 8765 4321',
+  },
+]
+
 export const demoAppointments: Appointment[] = [
   {
     id: 'appointment-1',
     date: DEMO_DATE,
     startTime: '09:00',
-    status: 'reserved',
+    status: 'confirmed',
     clientName: 'Camila Rojas',
     serviceName: 'Sesión de seguimiento',
+  },
+  {
+    id: 'appointment-5',
+    date: DEMO_DATE,
+    startTime: '09:45',
+    status: 'pending',
+    clientName: 'Ignacia Soto',
+    serviceName: 'Consulta inicial',
+    proofDeadlineHours: 3,
+    proofFileName: 'comprobante-ignacia.pdf',
+    proofFileUrl: '/demo/comprobante-transferencia.svg',
   },
   {
     id: 'appointment-2',
@@ -81,7 +104,7 @@ export const demoAppointments: Appointment[] = [
     id: 'appointment-3',
     date: DEMO_DATE,
     startTime: '11:15',
-    status: 'reserved',
+    status: 'confirmed',
     clientName: 'Martín Silva',
     serviceName: 'Consulta inicial',
   },
@@ -89,8 +112,50 @@ export const demoAppointments: Appointment[] = [
     id: 'appointment-4',
     date: '2026-08-05',
     startTime: '15:00',
-    status: 'reserved',
+    status: 'confirmed',
     clientName: 'Josefa Pérez',
     serviceName: 'Revisión de proyecto',
+  },
+  {
+    id: 'appointment-today-in-person',
+    date: DEMO_TODAY_DATE,
+    startTime: '09:30',
+    status: 'confirmed',
+    clientName: 'Valentina Soto',
+    pricing: {
+      amount: 35000,
+      id: 'pricing-particular-in-person',
+      name: 'Particular',
+      serviceMode: 'in-person',
+    },
+  },
+  {
+    id: 'appointment-today-remote',
+    date: DEMO_TODAY_DATE,
+    startTime: '10:15',
+    status: 'pending',
+    clientName: 'Diego Morales',
+    pricing: {
+      amount: 30000,
+      id: 'pricing-particular-remote',
+      name: 'Particular',
+      serviceMode: 'remote',
+    },
+    proofDeadlineHours: 3,
+    proofFileName: 'comprobante-diego.svg',
+    proofFileUrl: '/demo/comprobante-transferencia.svg',
+  },
+  {
+    id: 'appointment-today-home-visit',
+    date: DEMO_TODAY_DATE,
+    startTime: '11:00',
+    status: 'confirmed',
+    clientName: 'Paula Muñoz',
+    pricing: {
+      amount: 40000,
+      id: 'pricing-particular-home-visit',
+      name: 'Particular',
+      serviceMode: 'home-visit',
+    },
   },
 ]
