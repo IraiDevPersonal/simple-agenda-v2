@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { AppButton } from '@/components/ui/app-button'
-import { AppInput } from '@/components/ui/app-input'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Icon } from '@/components/ui/icon'
 import { IconButton } from '@/components/ui/icon-button'
 import { generateAgendaSlots } from '@/features/agenda/lib/generate-agenda-slots'
-import { formatLongDate, isValidDateKey } from '@/lib/date-utils'
+import {
+  formatLongDate,
+  isDateTimeInPast,
+  isValidDateKey,
+  todayDateKey,
+} from '@/lib/date-utils'
 import { getServiceModeLabel } from '@/lib/service-mode-utils'
 import type {
   AgendaSlot,
@@ -53,9 +58,19 @@ export function RescheduleDialog({
   onSubmit,
 }: RescheduleDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
-  const [selectedDate, setSelectedDate] = useState<DateKey>(appointment.date)
+  const todayDate = todayDateKey()
+  const [selectedDate, setSelectedDate] = useState<DateKey>(() => todayDate)
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNow(new Date())
+    }, 60_000)
+
+    return () => window.clearInterval(intervalId)
+  }, [])
 
   const availableSlots = useMemo(() => {
     if (blockedDates.includes(selectedDate)) {
@@ -70,10 +85,11 @@ export function RescheduleDialog({
     }).filter(
       (slot) =>
         slot.status === 'available' &&
+        !isDateTimeInPast(slot.date, slot.startTime, now) &&
         slot.serviceMode === serviceMode &&
         !(slot.date === appointment.date && slot.startTime === appointment.startTime),
     )
-  }, [appointment, appointments, appointmentBufferMinutes, blockedDates, scheduleSegments, selectedDate, serviceMode])
+  }, [appointment, appointments, appointmentBufferMinutes, blockedDates, now, scheduleSegments, selectedDate, serviceMode])
 
   const selectedSlot = availableSlots.find((slot) => slot.id === selectedSlotId)
 
@@ -135,8 +151,22 @@ export function RescheduleDialog({
     dialogRef.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus()
   }, [])
 
+  function hasAgendaSlots(date: DateKey) {
+    if (blockedDates.includes(date)) {
+      return false
+    }
+
+    return generateAgendaSlots({
+      appointments: appointments.filter((item) => item.id !== appointment.id),
+      bufferMinutes: appointmentBufferMinutes,
+      date,
+      scheduleSegments,
+    }).length > 0
+  }
+
   function handleDateChange(value: string) {
-    if (!isValidDateKey(value)) {
+    if (!isValidDateKey(value) || value < todayDate || !hasAgendaSlots(value)) {
+      setError('Selecciona una fecha con bloques de agenda disponibles.')
       return
     }
 
@@ -211,13 +241,12 @@ export function RescheduleDialog({
           >
             Nueva fecha
           </label>
-          <AppInput
-            autoFocus
-            data-autofocus="true"
+          <DatePicker
             id="reschedule-date"
-            onChange={(event) => handleDateChange(event.currentTarget.value)}
-            type="date"
-            value={selectedDate}
+            isDateDisabled={(date) => date < todayDate || !hasAgendaSlots(date)}
+            minDate={todayDate}
+            onSelect={handleDateChange}
+            selectedDate={selectedDate}
           />
           <p className="text-xs text-ink-muted">
             {formatLongDate(selectedDate)} · {getServiceModeLabel(serviceMode)}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -54,7 +54,13 @@ describe('AgendaPage', () => {
     await user.click(rescheduleButtons.at(-1)!)
 
     const dateInput = screen.getByLabelText('Nueva fecha')
-    fireEvent.change(dateInput, { target: { value: '2026-08-11' } })
+    await user.click(dateInput)
+
+    const datePicker = screen.getByRole('dialog', { name: 'Selector de fecha' })
+    await user.click(within(datePicker).getByRole('button', { name: 'Mes siguiente' }))
+    await user.click(
+      within(datePicker).getByRole('button', { name: /martes, 1 de diciembre/i }),
+    )
     await user.click(screen.getByRole('button', { name: /09:00.*Termina a las 09:45/ }))
     await user.click(screen.getByRole('button', { name: 'Confirmar horario' }))
 
@@ -92,6 +98,22 @@ describe('AgendaPage', () => {
 
     expect(screen.getByText('Valentina Soto')).toBeInTheDocument()
     expect(screen.getByText('Paula Muñoz')).toBeInTheDocument()
+  })
+
+  it('deshabilita en el selector los días sin bloques configurados', async () => {
+    const router = createRouter({
+      history: createMemoryHistory({
+        initialEntries: ['/agenda?date=2026-11-20'],
+      }),
+      routeTree,
+    })
+
+    render(<RouterProvider router={router} />)
+
+    expect(await screen.findByRole('heading', { name: 'Mi agenda' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sáb 21 de nov/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /dom 22 de nov/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /lun 16 de nov/i })).toBeEnabled()
   })
 
   it('bloquea el día como una excepción de disponibilidad reversible', async () => {

@@ -62,10 +62,35 @@ export function isValidDateKey(value: unknown): value is DateKey {
   )
 }
 
-export function todayDateKey(): DateKey {
-  const parts = datePartsInTimeZone(new Date())
+export function todayDateKey(now = new Date()): DateKey {
+  const parts = datePartsInTimeZone(now)
 
   return `${parts.year}-${parts.month}-${parts.day}`
+}
+
+export function isDateTimeInPast(
+  dateKey: DateKey,
+  time: string,
+  now = new Date(),
+): boolean {
+  const today = todayDateKey(now)
+
+  if (dateKey < today) {
+    return true
+  }
+
+  if (dateKey > today) {
+    return false
+  }
+
+  const currentTime = new Intl.DateTimeFormat('en-CA', {
+    hour: '2-digit',
+    hourCycle: 'h23',
+    minute: '2-digit',
+    timeZone: TIME_ZONE,
+  }).format(now)
+
+  return time <= currentTime
 }
 
 export function weekdayFromDateKey(dateKey: DateKey): Weekday {
@@ -84,6 +109,22 @@ export function getWeekDates(dateKey: DateKey): DateKey[] {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(selectedDate)
     date.setUTCDate(selectedDate.getUTCDate() + index)
+
+    return toDateKey(date)
+  })
+}
+
+export function getMonthDates(dateKey: DateKey): DateKey[] {
+  const monthStart = dateFromKey(dateKey)
+  monthStart.setUTCDate(1)
+
+  const day = monthStart.getUTCDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  monthStart.setUTCDate(monthStart.getUTCDate() + mondayOffset)
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(monthStart)
+    date.setUTCDate(monthStart.getUTCDate() + index)
 
     return toDateKey(date)
   })
@@ -131,6 +172,12 @@ export function formatDayNumber(dateKey: DateKey): string {
     day: '2-digit',
     timeZone: 'UTC',
   }).format(dateFromKey(dateKey))
+}
+
+export function formatDateInputValue(dateKey: DateKey): string {
+  const [year, month, day] = dateKey.split('-')
+
+  return `${day}/${month}/${year}`
 }
 
 export function formatDayName(dateKey: DateKey): string {

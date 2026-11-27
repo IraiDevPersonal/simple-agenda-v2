@@ -12,12 +12,19 @@ import type { DateKey } from '@/types/agenda'
 
 type DateStripProps = {
   dates: DateKey[]
+  disabledDates?: ReadonlySet<DateKey>
   selectedDate: DateKey
   onSelect: (date: DateKey) => void
   onShift: (days: number) => void
 }
 
-export function DateStrip({ dates, onSelect, onShift, selectedDate }: DateStripProps) {
+export function DateStrip({
+  dates,
+  disabledDates,
+  onSelect,
+  onShift,
+  selectedDate,
+}: DateStripProps) {
   const dateStripRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
@@ -78,6 +85,7 @@ export function DateStrip({ dates, onSelect, onShift, selectedDate }: DateStripP
           ref={dateStripRef}
         >
           {dates.map((date) => {
+            const isDisabled = disabledDates?.has(date) ?? false
             const isSelected = date === selectedDate
 
             return (
@@ -85,6 +93,7 @@ export function DateStrip({ dates, onSelect, onShift, selectedDate }: DateStripP
                 aria-current={isSelected ? 'date' : undefined}
                 aria-label={`${formatDayName(date)} ${formatDayNumber(date)} de ${formatMonthShort(date)}`}
                 className="min-w-[4.3rem] flex-1 flex-col gap-0.5 px-2 py-2 sm:min-w-[5rem]"
+                disabled={isDisabled}
                 key={date}
                 onClick={() => onSelect(date)}
                 size="sm"

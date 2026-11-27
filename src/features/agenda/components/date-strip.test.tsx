@@ -28,6 +28,27 @@ describe('DateStrip', () => {
     expect(onSelect).toHaveBeenCalledWith('2026-08-05')
   })
 
+  it('deshabilita las fechas sin bloques de agenda', async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+
+    render(
+      <DateStrip
+        dates={getWeekDates('2026-08-04')}
+        disabledDates={new Set(['2026-08-05'])}
+        onSelect={onSelect}
+        onShift={vi.fn()}
+        selectedDate="2026-08-04"
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /mié 05/i })).toBeDisabled()
+
+    await user.click(screen.getByRole('button', { name: /mié 05/i }))
+
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
   it('no desplaza la tira cuando todos los días caben', async () => {
     const scrollTo = vi.fn()
     const originalScrollTo = HTMLElement.prototype.scrollTo

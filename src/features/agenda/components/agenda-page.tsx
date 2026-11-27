@@ -66,12 +66,17 @@ export function AgendaPage() {
   const selectedDate = search.date ?? todayDateKey()
   const isSelectedDateBlocked = blockedDates.includes(selectedDate)
   const dates = getWeekDates(selectedDate)
-  const slots = generateAgendaSlots({
-    appointments,
-    date: selectedDate,
-    scheduleSegments,
-    bufferMinutes: appointmentBufferMinutes,
-  })
+  const getSlotsForDate = (date: DateKey) =>
+    generateAgendaSlots({
+      appointments,
+      date,
+      scheduleSegments,
+      bufferMinutes: appointmentBufferMinutes,
+    })
+  const slots = getSlotsForDate(selectedDate)
+  const disabledDates = new Set(
+    dates.filter((date) => getSlotsForDate(date).length === 0),
+  )
   const displaySlots = isSelectedDateBlocked
     ? slots.map((slot) =>
         slot.status === 'available'
@@ -222,6 +227,7 @@ export function AgendaPage() {
         </div>
         <DateStrip
           dates={dates}
+          disabledDates={disabledDates}
           onSelect={selectDate}
           onShift={shiftSelectedDate}
           selectedDate={selectedDate}
